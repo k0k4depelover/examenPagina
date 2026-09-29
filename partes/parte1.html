@@ -1,0 +1,899 @@
+<section id="inicio" class="paso">
+  <header class="paso-head"><span class="num ref">★</span><div><h2>Resumen: qué vas a hacer</h2><p class="meta">⏱ 2 min de lectura · 📍 Dónde: aquí, antes de tocar nada</p></div></header>
+
+  <div class="grid2">
+    <div>
+      <h3>Punto de partida (ya lo tienes)</h3>
+      <ul>
+        <li>✅ El proyecto <code>PruebaExamen.sln</code> (WinForms .NET 4.8) <strong>ya compila</strong>.</li>
+        <li>✅ Ya tiene las referencias a <code>CapaVista_Navegador.dll</code> y <code>CapaControlador_Seguridad.dll</code>.</li>
+        <li>✅ Compila en <strong>x64</strong> (<code>Prefer32Bit = false</code>), que es lo que piden las DLL.</li>
+        <li>✅ <code>Form1</code> ya tiene el control <code>navegador2</code> apuntando a <code>tblempleado</code> (módulo 4, aplicación 5).</li>
+        <li>✅ El DSN ODBC <code>EmbutidosS.A</code> (root → <code>dbsistemaembutidos</code>) funciona.</li>
+        <li>⚠️ <code>Program.cs</code> hoy entra <strong>siempre</strong> como <code>imelendez</code>: lo cambias por un login en el <a href="#paso4">paso 4</a>.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Qué vas a construir</h3>
+      <ul>
+        <li><strong>CRUD de productos</strong> de Embutidos de Calidad S.A.: tabla <code>tblproducto</code> con su <strong>categoría por llave foránea</strong> (<code>tblcategoriaproducto</code>: Chorizos, Jamones, Salchichas).</li>
+        <li>Registrado en Seguridad como la aplicación <strong>«Productos»</strong> del módulo <strong>2 · Inventario</strong>, con permisos por rol.</li>
+        <li>Una <strong>pantalla de login</strong> para entrar con cualquier usuario.</li>
+        <li>Demostración con un <strong>administrador</strong> (todo activo) y con un <strong>usuario restringido</strong> (sin Eliminar ni Imprimir).</li>
+        <li>Y la evidencia en la <strong>bitácora</strong>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Por qué este escenario</h3>
+  <p>El <strong>22/09</strong> el grupo de Seguridad tuvo su examen y quedó en la bitácora (≈ 14 min): crear empleado → crear usuario <code>UsuarioExamen</code> → crear perfil <code>PerfilExamen</code> → asignarle una aplicación <strong>solo con Ingresar + Modificar</strong> → asignar el perfil al usuario → entrar con ese usuario. Para el Navegador lo esperable es lo mismo visto desde el otro lado: una tabla del negocio, registrada en Seguridad, con su CRUD y demostrada con un usuario restringido. La base <strong>no tiene</strong> tablas del negocio (productos, clientes, pedidos…), así que la creas tú.</p>
+
+  <h3>Mapa del proceso</h3>
+  <svg viewBox="0 0 820 262" width="100%" role="img" aria-label="Mapa del proceso en 8 pasos: 1 Tablas SQL, 2 Registrar en Seguridad, 3 Form1 una línea, 4 Login, 5 Compilar y ejecutar, 6 Demostrar CRUD, 7 Usuario restringido, 8 Bitácora">
+    <defs><marker id="flecha1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+    <!-- Fila 1 -->
+    <rect x="2" y="10" width="184" height="84" rx="10" class="d-box"/>
+    <text x="94" y="36" text-anchor="middle" font-size="13" class="d-muted">PASO 1</text>
+    <text x="94" y="62" text-anchor="middle" font-size="15" font-weight="600" class="d-text">Tablas (SQL)</text>
+    <text x="94" y="83" text-anchor="middle" font-size="13" class="d-text-sm">MySQL · 8 min</text>
+    <line x1="188" y1="52" x2="210" y2="52" class="d-line" marker-end="url(#flecha1a)"/>
+
+    <rect x="213" y="10" width="184" height="84" rx="10" class="d-box"/>
+    <text x="305" y="36" text-anchor="middle" font-size="13" class="d-muted">PASO 2</text>
+    <text x="305" y="62" text-anchor="middle" font-size="15" font-weight="600" class="d-text">Registrar en Seguridad</text>
+    <text x="305" y="83" text-anchor="middle" font-size="13" class="d-text-sm">MySQL · 5 min</text>
+    <line x1="399" y1="52" x2="421" y2="52" class="d-line" marker-end="url(#flecha1a)"/>
+
+    <rect x="424" y="10" width="184" height="84" rx="10" class="d-box"/>
+    <text x="516" y="36" text-anchor="middle" font-size="13" class="d-muted">PASO 3</text>
+    <text x="516" y="62" text-anchor="middle" font-size="15" font-weight="600" class="d-text">Form1 (1 línea)</text>
+    <text x="516" y="83" text-anchor="middle" font-size="13" class="d-text-sm">Visual Studio · 2 min</text>
+    <line x1="610" y1="52" x2="632" y2="52" class="d-line" marker-end="url(#flecha1a)"/>
+
+    <rect x="635" y="10" width="184" height="84" rx="10" class="d-box"/>
+    <text x="727" y="36" text-anchor="middle" font-size="13" class="d-muted">PASO 4</text>
+    <text x="727" y="62" text-anchor="middle" font-size="15" font-weight="600" class="d-text">Login</text>
+    <text x="727" y="83" text-anchor="middle" font-size="13" class="d-text-sm">Visual Studio · 8 min</text>
+
+    <!-- Bajada de la fila 1 a la fila 2 -->
+    <path d="M727,94 V122 H94 V147" fill="none" class="d-line" marker-end="url(#flecha1a)"/>
+
+    <!-- Fila 2 -->
+    <rect x="2" y="150" width="184" height="84" rx="10" class="d-box"/>
+    <text x="94" y="176" text-anchor="middle" font-size="13" class="d-muted">PASO 5</text>
+    <text x="94" y="202" text-anchor="middle" font-size="15" font-weight="600" class="d-text">Compilar y ejecutar</text>
+    <text x="94" y="223" text-anchor="middle" font-size="13" class="d-text-sm">Visual Studio · 3 min</text>
+    <line x1="188" y1="192" x2="210" y2="192" class="d-line" marker-end="url(#flecha1a)"/>
+
+    <rect x="213" y="150" width="184" height="84" rx="10" class="d-accent"/>
+    <text x="305" y="176" text-anchor="middle" font-size="13" class="d-muted">PASO 6</text>
+    <text x="305" y="202" text-anchor="middle" font-size="15" font-weight="600" class="d-text">Demostrar CRUD</text>
+    <text x="305" y="223" text-anchor="middle" font-size="13" class="d-text-sm">La app · 15 min</text>
+    <line x1="399" y1="192" x2="421" y2="192" class="d-line" marker-end="url(#flecha1a)"/>
+
+    <rect x="424" y="150" width="184" height="84" rx="10" class="d-accent"/>
+    <text x="516" y="176" text-anchor="middle" font-size="13" class="d-muted">PASO 7</text>
+    <text x="516" y="202" text-anchor="middle" font-size="15" font-weight="600" class="d-text">Usuario restringido</text>
+    <text x="516" y="223" text-anchor="middle" font-size="13" class="d-text-sm">La app · 7 min</text>
+    <line x1="610" y1="192" x2="632" y2="192" class="d-line" marker-end="url(#flecha1a)"/>
+
+    <rect x="635" y="150" width="184" height="84" rx="10" class="d-box"/>
+    <text x="727" y="176" text-anchor="middle" font-size="13" class="d-muted">PASO 8</text>
+    <text x="727" y="202" text-anchor="middle" font-size="15" font-weight="600" class="d-text">Bitácora</text>
+    <text x="727" y="223" text-anchor="middle" font-size="13" class="d-text-sm">MySQL · 3 min</text>
+
+    <text x="410" y="256" text-anchor="middle" font-size="13" class="d-muted">Resaltado = lo que demuestras frente al catedrático · Total ≈ 51 min + 9 de colchón</text>
+  </svg>
+
+  <h3>Plan para 1 hora de examen</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Paso</th><th>Qué haces</th><th>Dónde</th><th>Minutos</th><th>Reloj (acumulado)</th></tr></thead>
+    <tbody>
+      <tr><td><a href="#paso1">1</a></td><td>Crear las tablas <code>tblcategoriaproducto</code> y <code>tblproducto</code></td><td>MySQL Workbench</td><td>8</td><td>0:08</td></tr>
+      <tr><td><a href="#paso2">2</a></td><td>Registrar la aplicación «Productos» y sus permisos</td><td>MySQL Workbench</td><td>5</td><td>0:13</td></tr>
+      <tr><td><a href="#paso3">3</a></td><td>Cambiar 1 línea en <code>Form1.cs</code></td><td>Visual Studio</td><td>2</td><td>0:15</td></tr>
+      <tr><td><a href="#paso4">4</a></td><td>Agregar la pantalla de login</td><td>Visual Studio</td><td>8</td><td>0:23</td></tr>
+      <tr><td><a href="#paso5">5</a></td><td>Compilar y ejecutar</td><td>Visual Studio</td><td>3</td><td>0:26</td></tr>
+      <tr><td><a href="#paso6">6</a></td><td>Demostrar el CRUD (ingresar, consultar, modificar, eliminar)</td><td>La app</td><td>15</td><td>0:41</td></tr>
+      <tr><td><a href="#paso7">7</a></td><td>Entrar con el usuario restringido</td><td>La app</td><td>7</td><td>0:48</td></tr>
+      <tr><td><a href="#paso8">8</a></td><td>Mostrar la bitácora</td><td>MySQL Workbench</td><td>3</td><td>0:51</td></tr>
+      <tr><td>—</td><td><strong>Colchón</strong> para imprevistos</td><td>—</td><td>9</td><td>1:00</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="nota warn"><strong>Las capturas son del manual original</strong><p>Las imágenes de esta guía salen del manual/ayuda original del Navegador, que usa la tabla <code>tblempleado</code>. Con tu tabla verás los campos de <code>tblproducto</code> (idProducto, idCategoria, nombreProducto…), pero los botones y el comportamiento son los mismos.</p></div>
+
+  <div class="nota info"><strong>¿Te piden otra tabla?</strong><p>El proceso es idéntico. Cambia el nombre de la tabla en el paso 1, el nombre de la aplicación (y el módulo si aplica, por ejemplo 3 · Ventas para clientes) en el paso 2, y el primer parámetro en el paso 3.</p></div>
+
+  <h3>Antes de empezar</h3>
+  <ul class="check">
+    <li><label><input type="checkbox" data-k="g1-ini-mysql"> MySQL encendido y MySQL Workbench abierto</label></li>
+    <li><label><input type="checkbox" data-k="g1-ini-vs"> Visual Studio abierto con <code>PruebaExamen.sln</code></label></li>
+    <li><label><input type="checkbox" data-k="g1-ini-papel"> Papel a mano para anotar el número de aplicación (paso 2)</label></li>
+  </ul>
+</section>
+
+<section id="paso1" class="paso">
+  <header class="paso-head"><span class="num">1</span><div><h2>Crear las tablas en MySQL</h2><p class="meta">⏱ 8 min · 📍 MySQL Workbench</p></div></header>
+
+  <p>Vas a crear 2 tablas: las <strong>categorías</strong> (Chorizos, Jamones, Salchichas) y los <strong>productos</strong>, unidas por una llave foránea real. El script ya trae las 3 categorías cargadas.</p>
+
+  <h3>Ejecuta el script</h3>
+  <ol class="steps">
+    <li>Abre <strong>MySQL Workbench</strong>.</li>
+    <li>En la pantalla de inicio haz clic en tu conexión <strong>Local</strong> (usuario <code>root</code>). Si pide contraseña, escríbela.</li>
+    <li>Abre una pestaña de consulta nueva: ícono <strong>SQL+</strong> (arriba a la izquierda) o <kbd>Ctrl</kbd>+<kbd>T</kbd>.</li>
+    <li>Pulsa <strong>Copiar</strong> en el bloque de abajo y pégalo en la pestaña (<kbd>Ctrl</kbd>+<kbd>V</kbd>).</li>
+    <li>Ejecuta TODO con el rayo ⚡ <strong>simple</strong> (el primero de la barra; no el rayo con cursor, que corre una sola sentencia) o con <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd>. <strong>No selecciones texto antes</strong>: si hay algo seleccionado, solo corre lo seleccionado.</li>
+    <li>Abajo, en el panel <strong>Output</strong> (Action Output), todas las filas deben tener ✔ verde. Si alguna tiene ✖ roja, lee la columna <em>Message</em> de esa fila.</li>
+    <li>En el panel <strong>SCHEMAS</strong> (izquierda) pulsa el ícono ⟳ de refrescar y despliega <code>dbsistemaembutidos › Tables</code>: deben aparecer <code>tblcategoriaproducto</code> y <code>tblproducto</code>.</li>
+  </ol>
+
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench · crear tablas</span><button class="copy" type="button">Copiar</button></div><pre><code>USE dbsistemaembutidos;
+
+CREATE TABLE tblcategoriaproducto (
+  idCategoria INT AUTO_INCREMENT PRIMARY KEY,
+  nombreCategoria VARCHAR(60) NOT NULL
+);
+
+CREATE TABLE tblproducto (
+  idProducto INT AUTO_INCREMENT PRIMARY KEY,
+  idCategoria INT NOT NULL,
+  nombreProducto VARCHAR(100) NOT NULL,
+  precioProducto DECIMAL(10,2) NOT NULL,
+  fechaVencimiento DATE NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  CONSTRAINT fk_producto_categoria FOREIGN KEY (idCategoria)
+    REFERENCES tblcategoriaproducto(idCategoria)
+);
+
+INSERT INTO tblcategoriaproducto (nombreCategoria)
+VALUES ('Chorizos'), ('Jamones'), ('Salchichas');</code></pre></div>
+
+  <p>Así debe verse el panel <strong>Output</strong> (4 filas en verde):</p>
+  <div class="win"><div class="win-title">Output · Action Output</div><div class="win-body">
+    <div class="tabla-wrap"><table class="tabla">
+      <thead><tr><th></th><th>#</th><th>Action</th><th>Message</th></tr></thead>
+      <tbody>
+        <tr><td>✔</td><td>1</td><td><code>USE dbsistemaembutidos</code></td><td>0 row(s) affected</td></tr>
+        <tr><td>✔</td><td>2</td><td><code>CREATE TABLE tblcategoriaproducto (…)</code></td><td>0 row(s) affected</td></tr>
+        <tr><td>✔</td><td>3</td><td><code>CREATE TABLE tblproducto (…)</code></td><td>0 row(s) affected</td></tr>
+        <tr><td>✔</td><td>4</td><td><code>INSERT INTO tblcategoriaproducto …</code></td><td>3 row(s) affected Records: 3 Duplicates: 0 Warnings: 0</td></tr>
+      </tbody>
+    </table></div>
+  </div></div>
+
+  <div class="nota warn"><strong>¿Sale «Table 'tblproducto' already exists»?</strong><p>Es porque ya lo corriste antes. Usa el script de <a href="#reinicio">Reiniciar la práctica</a> para borrar lo anterior y vuelve a correr este script completo.</p></div>
+
+  <h3>Cómo quedan (diagrama entidad-relación)</h3>
+  <svg viewBox="0 0 800 290" width="100%" role="img" aria-label="Diagrama entidad-relación: tblcategoriaproducto con idCategoria como llave primaria y nombreCategoria; tblproducto con idProducto como llave primaria, idCategoria como llave foránea, nombreProducto, precioProducto, fechaVencimiento e is_active. Relación uno a muchos: una categoría tiene muchos productos.">
+    <defs><marker id="flecha1b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+    <!-- tblcategoriaproducto -->
+    <rect x="20" y="20" width="300" height="36" rx="6" class="d-accent"/>
+    <text x="170" y="44" text-anchor="middle" font-size="15" font-weight="700" class="d-text">tblcategoriaproducto</text>
+    <rect x="20" y="56" width="300" height="32" class="d-box"/>
+    <text x="32" y="77" font-size="14" class="d-text">🔑 idCategoria</text>
+    <text x="308" y="77" text-anchor="end" font-size="13" class="d-text-sm">INT · AUTO_INCREMENT</text>
+    <rect x="20" y="88" width="300" height="32" class="d-box"/>
+    <text x="32" y="109" font-size="14" class="d-text">nombreCategoria</text>
+    <text x="308" y="109" text-anchor="end" font-size="13" class="d-text-sm">VARCHAR(60)</text>
+
+    <!-- tblproducto -->
+    <rect x="470" y="20" width="320" height="36" rx="6" class="d-accent"/>
+    <text x="630" y="44" text-anchor="middle" font-size="15" font-weight="700" class="d-text">tblproducto</text>
+    <rect x="470" y="56" width="320" height="32" class="d-box"/>
+    <text x="482" y="77" font-size="14" class="d-text">🔑 idProducto</text>
+    <text x="778" y="77" text-anchor="end" font-size="13" class="d-text-sm">INT · AUTO_INCREMENT</text>
+    <rect x="470" y="88" width="320" height="32" class="d-box"/>
+    <text x="482" y="109" font-size="14" class="d-text">🔗 idCategoria</text>
+    <text x="778" y="109" text-anchor="end" font-size="13" class="d-text-sm">INT · FK</text>
+    <rect x="470" y="120" width="320" height="32" class="d-box"/>
+    <text x="482" y="141" font-size="14" class="d-text">nombreProducto</text>
+    <text x="778" y="141" text-anchor="end" font-size="13" class="d-text-sm">VARCHAR(100)</text>
+    <rect x="470" y="152" width="320" height="32" class="d-box"/>
+    <text x="482" y="173" font-size="14" class="d-text">precioProducto</text>
+    <text x="778" y="173" text-anchor="end" font-size="13" class="d-text-sm">DECIMAL(10,2)</text>
+    <rect x="470" y="184" width="320" height="32" class="d-box"/>
+    <text x="482" y="205" font-size="14" class="d-text">fechaVencimiento</text>
+    <text x="778" y="205" text-anchor="end" font-size="13" class="d-text-sm">DATE</text>
+    <rect x="470" y="216" width="320" height="32" class="d-box"/>
+    <text x="482" y="237" font-size="14" class="d-text">is_active</text>
+    <text x="778" y="237" text-anchor="end" font-size="13" class="d-text-sm">TINYINT(1) · 1</text>
+
+    <!-- Relación 1 — N -->
+    <path d="M320,72 H395 V104 H470" fill="none" class="d-line"/>
+    <text x="332" y="65" font-size="15" font-weight="700" class="d-text">1</text>
+    <text x="452" y="97" font-size="15" font-weight="700" class="d-text">N</text>
+    <text x="395" y="134" text-anchor="middle" font-size="13" class="d-muted">FK real</text>
+    <text x="395" y="151" text-anchor="middle" font-size="13" class="d-muted">(CONSTRAINT)</text>
+
+    <text x="20" y="180" font-size="16" font-weight="700" class="d-text">Relación 1 — N</text>
+    <text x="20" y="204" font-size="13" class="d-text-sm">Una categoría (Chorizos) tiene muchos</text>
+    <text x="20" y="222" font-size="13" class="d-text-sm">productos; cada producto pertenece a</text>
+    <text x="20" y="240" font-size="13" class="d-text-sm">una sola categoría.</text>
+    <text x="20" y="274" font-size="13" class="d-muted">Datos iniciales: Chorizos · Jamones · Salchichas</text>
+  </svg>
+
+  <h3>Cada columna → qué control verás en el Navegador</h3>
+  <p>El Navegador lee la estructura de la tabla y arma el formulario solo. Esto es lo que va a salir con <code>tblproducto</code>:</p>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Columna</th><th>Tipo en MySQL</th><th>Control</th><th>Cómo se ve</th><th>Regla</th></tr></thead>
+    <tbody>
+      <tr><td><code>idProducto</code></td><td>INT AUTO_INCREMENT PK</td><td>TextBox editable (etiqueta roja <em>[PK]</em>)</td><td><span class="input"></span></td><td><strong>Déjalo vacío</strong> al ingresar: MySQL pone el número. Al modificar queda bloqueado.</td></tr>
+      <tr><td><code>idCategoria</code></td><td>INT FK → tblcategoriaproducto</td><td>ComboBox desplegable</td><td><span class="input combo">Chorizos ▾</span></td><td>Opciones: Chorizos / Jamones / Salchichas (muestra <code>nombreCategoria</code>, guarda el id).</td></tr>
+      <tr><td><code>nombreProducto</code></td><td>VARCHAR(100) NOT NULL</td><td>TextBox</td><td><span class="input">Chorizo parrillero</span></td><td>Obligatorio, máximo 100 caracteres.</td></tr>
+      <tr><td><code>precioProducto</code></td><td>DECIMAL(10,2) NOT NULL</td><td>TextBox</td><td><span class="input">45.50</span></td><td>Debe ser número decimal. Obligatorio.</td></tr>
+      <tr><td><code>fechaVencimiento</code></td><td>DATE NOT NULL</td><td>DateTimePicker (fecha corta)</td><td><span class="input date">29/09/2026 ▾</span></td><td>Se elige en el calendario.</td></tr>
+      <tr><td><code>is_active</code></td><td>TINYINT(1) DEFAULT 1</td><td>CheckBox</td><td><span class="chk">☑ Sí (marcado) / No (desmarcado)</span></td><td>Marcado = 1 (activo).</td></tr>
+    </tbody>
+  </table></div>
+  <div class="nota warn"><strong>La PK sale editable (no gris)</strong><p>El Navegador intenta detectar el AUTO_INCREMENT, pero el driver ODBC de MySQL no le entrega ese dato (lo comprobamos en tu máquina con <code>tblempleado</code>). Por eso <code>idProducto [PK]</code> aparece como un campo blanco normal con la etiqueta en rojo. <strong>Déjalo vacío</strong> y MySQL lo numera solo; si escribes un número que ya existe sale <em>"Ya existe un registro con el mismo valor en un campo único."</em> El manual de usuario hace lo mismo: escribe <code>idEmpleado = 4</code> a mano.</p></div>
+
+  <div class="nota info"><strong>Por qué la FK tiene que ser real</strong><p>El combo de categorías sale porque el Navegador encuentra la llave foránea declarada con <code>CONSTRAINT … FOREIGN KEY … REFERENCES</code>. Si solo pones una columna <code>idCategoria INT</code> sin la CONSTRAINT, el Navegador la trata como un número cualquiera y verás un TextBox en vez del combo.</p></div>
+
+  <h3>Comprueba que quedó bien</h3>
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench · comprobación</span><button class="copy" type="button">Copiar</button></div><pre><code>SELECT * FROM tblcategoriaproducto;
+DESCRIBE tblproducto;</code></pre></div>
+
+  <div class="grid2">
+    <div>
+      <p><strong>Resultado del SELECT</strong> (3 filas):</p>
+      <div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th>idCategoria</th><th>nombreCategoria</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Chorizos</td></tr>
+          <tr><td>2</td><td>Jamones</td></tr>
+          <tr><td>3</td><td>Salchichas</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div>
+      <p><strong>Resultado del DESCRIBE</strong> (fíjate en la columna Key):</p>
+      <div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th>Field</th><th>Type</th><th>Key</th><th>Extra</th></tr></thead>
+        <tbody>
+          <tr><td>idProducto</td><td>int</td><td>PRI</td><td>auto_increment</td></tr>
+          <tr><td>idCategoria</td><td>int</td><td>MUL</td><td></td></tr>
+          <tr><td>nombreProducto</td><td>varchar(100)</td><td></td><td></td></tr>
+          <tr><td>precioProducto</td><td>decimal(10,2)</td><td></td><td></td></tr>
+          <tr><td>fechaVencimiento</td><td>date</td><td></td><td></td></tr>
+          <tr><td>is_active</td><td>tinyint(1)</td><td></td><td></td></tr>
+        </tbody>
+      </table></div>
+      <p><code>PRI</code> = llave primaria · <code>MUL</code> = índice de la FK (confirma que la FK existe).</p>
+    </div>
+  </div>
+
+  <ul class="check">
+    <li><label><input type="checkbox" data-k="g1-p1-output"> Output: las 4 filas con ✔ verde</label></li>
+    <li><label><input type="checkbox" data-k="g1-p1-select"> El SELECT muestra Chorizos, Jamones y Salchichas</label></li>
+    <li><label><input type="checkbox" data-k="g1-p1-mul"> En el DESCRIBE, <code>idCategoria</code> tiene <code>MUL</code></label></li>
+  </ul>
+</section>
+
+<section id="modulos" class="paso">
+  <header class="paso-head"><span class="num">M</span><div><h2>Antes del paso 2: ¿qué es el IdModulo? (y por qué «Inventario»)</h2><p class="meta">⏱ 3 min de lectura · 📍 Concepto clave de Seguridad, léelo aunque tengas prisa</p></div></header>
+
+  <div class="nota info"><strong>En una frase</strong><p>El <strong>IdModulo no es un inventario de nada</strong> y no crea nada: es solo el número de una fila de la tabla <code>tblmodulo</code>. Un módulo es un <strong>área de la empresa</strong> (Producción, Inventario, Ventas, Seguridad) que agrupa pantallas. Seguridad usa ese número como parte de la «dirección» de los permisos: <strong>rol + módulo + aplicación</strong>.</p></div>
+
+  <h3>La jerarquía de Seguridad</h3>
+  <p>El sistema de <strong>Embutidos de Calidad S.A.</strong> se organiza como un edificio: el <strong>módulo</strong> es el piso (un área de la empresa), la <strong>aplicación</strong> es una oficina de ese piso (una pantalla, por ejemplo «Productos») y el <strong>permiso</strong> es la llave que tiene cada rol para esa oficina (qué botones puede usar).</p>
+  <svg viewBox="0 0 800 385" width="100%" role="img" aria-label="Jerarquía de Seguridad. Arriba, el sistema Embutidos de Calidad S.A. Debajo, los módulos de tblmodulo: 1 Producción, 2 Inventario (resaltado), 3 Ventas y 4 Seguridad. Debajo de cada módulo, sus aplicaciones de tblaplicacion: Producción no tiene; Inventario tendrá Productos, la que creas en el paso 2; Ventas tiene 3 Gestión de Pedidos sin tabla ni permisos; Seguridad tiene las aplicaciones 4 a 12 y 15. Abajo, los permisos de tblrolmoduloaplicacion: cada fila es rol más módulo más aplicación con Ingresar, Modificar, Eliminar e Imprimir.">
+    <defs><marker id="flecha1m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+    <rect x="240" y="8" width="320" height="46" rx="10" class="d-box"/>
+    <text x="400" y="37" text-anchor="middle" font-size="15" font-weight="700" class="d-text">Sistema · Embutidos de Calidad S.A.</text>
+    <path d="M400,54 V74 M100,74 H700" class="d-line"/>
+    <path d="M100,74 V99" class="d-line" marker-end="url(#flecha1m)"/>
+    <path d="M300,74 V99" class="d-line" marker-end="url(#flecha1m)"/>
+    <path d="M500,74 V99" class="d-line" marker-end="url(#flecha1m)"/>
+    <path d="M700,74 V99" class="d-line" marker-end="url(#flecha1m)"/>
+    <text x="108" y="92" font-size="11" font-weight="700" class="d-muted">MÓDULOS · tblmodulo</text>
+
+    <rect x="10" y="100" width="180" height="72" rx="10" class="d-box"/>
+    <text x="100" y="126" text-anchor="middle" font-size="15" font-weight="700" class="d-text">1 · Producción</text>
+    <text x="100" y="146" text-anchor="middle" class="d-text-sm">producción de</text>
+    <text x="100" y="162" text-anchor="middle" class="d-text-sm">embutidos</text>
+    <rect x="210" y="100" width="180" height="72" rx="10" class="d-accent"/>
+    <text x="300" y="126" text-anchor="middle" font-size="15" font-weight="700" class="d-text">2 · Inventario</text>
+    <text x="300" y="146" text-anchor="middle" class="d-text-sm">materia prima y</text>
+    <text x="300" y="162" text-anchor="middle" class="d-text-sm">producto terminado</text>
+    <rect x="410" y="100" width="180" height="72" rx="10" class="d-box"/>
+    <text x="500" y="126" text-anchor="middle" font-size="15" font-weight="700" class="d-text">3 · Ventas</text>
+    <text x="500" y="146" text-anchor="middle" class="d-text-sm">pedidos y</text>
+    <text x="500" y="162" text-anchor="middle" class="d-text-sm">clientes</text>
+    <rect x="610" y="100" width="180" height="72" rx="10" class="d-box"/>
+    <text x="700" y="126" text-anchor="middle" font-size="15" font-weight="700" class="d-text">4 · Seguridad</text>
+    <text x="700" y="146" text-anchor="middle" class="d-text-sm">usuarios, perfiles</text>
+    <text x="700" y="162" text-anchor="middle" class="d-text-sm">y permisos</text>
+
+    <path d="M100,172 V214" class="d-line" marker-end="url(#flecha1m)"/>
+    <path d="M300,172 V214" class="d-line" marker-end="url(#flecha1m)"/>
+    <path d="M500,172 V214" class="d-line" marker-end="url(#flecha1m)"/>
+    <path d="M700,172 V214" class="d-line" marker-end="url(#flecha1m)"/>
+    <text x="108" y="204" font-size="11" font-weight="700" class="d-muted">APLICACIONES · tblaplicacion</text>
+
+    <rect x="10" y="215" width="180" height="76" rx="10" class="d-box" stroke-dasharray="5 4"/>
+    <text x="100" y="248" text-anchor="middle" font-size="13" class="d-muted">sin aplicaciones</text>
+    <text x="100" y="266" text-anchor="middle" font-size="13" class="d-muted">todavía</text>
+    <rect x="210" y="215" width="180" height="76" rx="10" class="d-accent"/>
+    <text x="300" y="240" text-anchor="middle" font-size="15" font-weight="700" class="d-text">Productos</text>
+    <text x="300" y="260" text-anchor="middle" class="d-text-sm">la creas en el paso 2</text>
+    <text x="300" y="277" text-anchor="middle" class="d-text-sm">id = @app (≈ 16)</text>
+    <rect x="410" y="215" width="180" height="76" rx="10" class="d-box"/>
+    <text x="500" y="240" text-anchor="middle" font-size="14" font-weight="700" class="d-text">3 · Gestión de Pedidos</text>
+    <text x="500" y="260" text-anchor="middle" class="d-text-sm">ya existe, pero sin</text>
+    <text x="500" y="277" text-anchor="middle" class="d-text-sm">tabla ni permisos</text>
+    <rect x="610" y="215" width="180" height="76" rx="10" class="d-box"/>
+    <text x="700" y="236" text-anchor="middle" class="d-text-sm">4 Empleados · 5 Usuarios</text>
+    <text x="700" y="252" text-anchor="middle" class="d-text-sm">6 Módulos · 7 Aplicaciones</text>
+    <text x="700" y="268" text-anchor="middle" class="d-text-sm">8 Perfiles · 9–11 asign.</text>
+    <text x="700" y="284" text-anchor="middle" class="d-text-sm">12 Bitácora · 15 Prueba</text>
+
+    <path d="M300,291 V319" class="d-line" marker-end="url(#flecha1m)"/>
+    <rect x="10" y="320" width="780" height="56" rx="10" class="d-ok"/>
+    <text x="400" y="343" text-anchor="middle" font-size="14" font-weight="700" class="d-text">PERMISOS · tblrolmoduloaplicacion</text>
+    <text x="400" y="364" text-anchor="middle" class="d-text-sm">cada fila = rol + módulo + aplicación → Ingresar / Modificar / Eliminar / Imprimir (1 = sí, 0 = no)</text>
+  </svg>
+
+  <h3>Los módulos que existen en tu base</h3>
+  <p>Estos son los 5 registros reales de <code>tblmodulo</code> en <code>dbsistemaembutidos</code>. La descripción es la que está guardada en la base.</p>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>idModulo</th><th>Módulo</th><th>Descripción en la BD</th><th>Qué tablas irían ahí (ejemplos)</th><th>Aplicaciones que ya tiene</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Producción</td><td>Módulo de control de producción de embutidos</td><td>recetas, lotes u órdenes de producción</td><td>ninguna</td></tr>
+      <tr><td><strong>2</strong></td><td><strong>Inventario</strong></td><td>Módulo de control de materia prima y producto terminado</td><td><strong>productos (chorizos, jamones…) y sus categorías</strong>, materia prima (carne, especias, tripa), bodegas, proveedores</td><td>ninguna → aquí creas <strong>«Productos»</strong></td></tr>
+      <tr><td>3</td><td>Ventas</td><td>Módulo de gestión de pedidos y clientes</td><td>clientes, pedidos, facturas</td><td>3 · Gestión de Pedidos (sin tabla)</td></tr>
+      <tr><td>4</td><td>Seguridad</td><td>Módulo de administración y seguridad del sistema</td><td>empleados, usuarios, perfiles, bitácora</td><td>4–12 y 15 (las pantallas de Seguridad)</td></tr>
+      <tr><td>13</td><td>Pruebas</td><td>Esto es una prueba controlada por parte de Seguridad.</td><td>—</td><td>ninguna</td></tr>
+    </tbody>
+  </table></div>
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench · ver módulos y sus aplicaciones</span><button class="copy" type="button">Copiar</button></div><pre><code>SELECT m.idModulo, m.nombreModulo, a.idAplicacion, a.nombreAplicacion
+FROM tblmodulo m
+LEFT JOIN tblaplicacion a ON a.idModulo = m.idModulo
+ORDER BY m.idModulo, a.idAplicacion;</code></pre></div>
+
+  <h3>¿Por qué «Inventario» para productos?</h3>
+  <p>La empresa fabrica y vende embutidos. El catálogo de lo que produce (chorizo parrillero, jamón de pavo, salchicha Viena…) con sus categorías es <strong>producto terminado</strong>, que es literalmente la descripción del módulo 2. Por eso la pantalla «Productos» se registra dentro de Inventario.</p>
+  <div class="nota ok"><strong>No hay una única respuesta correcta</strong><p>También se podría defender poner productos en Ventas. Lo que se evalúa es que sepas explicar la elección y que el número sea <strong>el mismo en los tres lugares</strong>. Si el catedrático dice «ponlo en Ventas», cambia el <code>2</code> por <code>3</code> en los tres.</p></div>
+
+  <h3>La regla de oro: el mismo número en 3 lugares</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Lugar</th><th>Dónde va el módulo</th><th>En la práctica</th></tr></thead>
+    <tbody>
+      <tr><td><code>tblaplicacion</code></td><td>columna <code>idModulo</code> de la fila «Productos» (paso 2)</td><td><strong>2</strong></td></tr>
+      <tr><td><code>tblrolmoduloaplicacion</code></td><td>columna <code>idModulo</code> de cada permiso (paso 2)</td><td><strong>2</strong></td></tr>
+      <tr><td><code>Form1.cs</code></td><td>2.º parámetro de <code>NavegadorMetConfigurar("tblproducto", 2, 16)</code> (paso 3)</td><td><strong>2</strong></td></tr>
+    </tbody>
+  </table></div>
+  <div class="nota danger"><strong>Si uno no coincide, todo sale en gris</strong><p>Seguridad busca la fila con <strong>rol + módulo + aplicación exactos</strong> (<code>ClsModeloAsigAppPerf.SeguridadMetObtenerPermisos</code>). Si <code>Form1</code> dice módulo 3 pero el permiso se guardó con módulo 2, no encuentra la fila y Ingresar, Modificar, Eliminar e Imprimir quedan deshabilitados. El módulo <strong>no cambia qué tabla se muestra</strong> (eso lo decide el primer parámetro): solo sirve para encontrar los permisos.</p></div>
+
+  <h3>¡Ojo! Módulos del curso ≠ módulos de Seguridad</h3>
+  <p>El repositorio del curso tiene las carpetas <code>codigo/modulos/bancos</code>, <code>comercial</code>, <code>contabilidad</code>, <code>hoteleria</code> y <code>rrhh</code>. Esos son los módulos que desarrollan <strong>los otros grupos del curso</strong>, <strong>no</strong> filas de <code>tblmodulo</code>. En tu base solo existen los 5 de la tabla de arriba.</p>
+  <p>Si en el examen te dicen «haz el CRUD para el módulo de Bancos» (o RRHH, Contabilidad…), <strong>primero crea ese módulo</strong> en <code>tblmodulo</code>. Pasó de verdad: el 22/09 alguien creó el módulo «Contabilidad» y quedó registrado en la bitácora. Todo en una sola ejecución con el rayo ⚡:</p>
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench · variante: módulo nuevo (ejemplo Bancos)</span><button class="copy" type="button">Copiar</button></div><pre><code>USE dbsistemaembutidos;
+
+-- 1) La tabla del CRUD (siempre con PK)
+CREATE TABLE tblcuentabancaria (
+  idCuenta INT AUTO_INCREMENT PRIMARY KEY,
+  numeroCuenta VARCHAR(20) NOT NULL,
+  nombreBanco VARCHAR(60) NOT NULL,
+  saldoCuenta DECIMAL(12,2) NOT NULL
+);
+
+-- 2) El módulo nuevo (nombreModulo es UNIQUE: no puede repetirse)
+INSERT INTO tblmodulo (nombreModulo, descripcionModulo)
+VALUES ('Bancos', 'Módulo de control de cuentas bancarias');
+SET @mod = LAST_INSERT_ID();
+
+-- 3) La pantalla (aplicación) dentro de ese módulo
+INSERT INTO tblaplicacion (idModulo, nombreAplicacion, descripcionAplicacion)
+VALUES (@mod, 'Cuentas bancarias', 'Mantenimiento de cuentas bancarias');
+SET @app = LAST_INSERT_ID();
+
+-- 4) Permisos por rol con ESE módulo y ESA aplicación
+INSERT INTO tblrolmoduloaplicacion
+  (idRol, idModulo, idAplicacion,
+   derInsertarRolModuloAplicacion, derEditarRolModuloAplicacion,
+   derEliminarRolModuloAplicacion, derImprimirRolModuloAplicacion)
+VALUES
+  (1,  @mod, @app, 1, 1, 1, 1),   -- Administrador: todo
+  (2,  @mod, @app, 1, 1, 0, 0),   -- Supervisor
+  (12, @mod, @app, 1, 1, 0, 0);   -- PerfilExamen
+
+SELECT @mod AS idModulo, @app AS idAplicacion;   -- ANOTA LOS DOS NÚMEROS</code></pre></div>
+  <div class="code"><div class="code-bar"><span>C# · Form1.cs · con el módulo nuevo</span><button class="copy" type="button">Copiar</button></div><pre><code>// (tabla, @mod, @app): pon los dos números que te dio el SELECT
+navegador2.NavegadorMetConfigurar("tblcuentabancaria", 14, 17);</code></pre></div>
+  <div class="nota warn"><strong>Si sale «Duplicate entry 'Bancos' for key 'uqNombreModulo'»</strong><p>Ese módulo ya existe: no lo crees otra vez. Busca su número con <code>SELECT idModulo FROM tblmodulo WHERE nombreModulo = 'Bancos';</code> y úsalo en lugar de <code>@mod</code> (escribe <code>SET @mod = 14;</code> con tu número y ejecuta desde el paso 3 del script).</p></div>
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench · deshacer la variante Bancos</span><button class="copy" type="button">Copiar</button></div><pre><code>SET SQL_SAFE_UPDATES = 0;
+SET @mod = (SELECT idModulo FROM tblmodulo WHERE nombreModulo = 'Bancos');
+DELETE FROM tblrolmoduloaplicacion WHERE idModulo = @mod;
+DELETE FROM tblaplicacion WHERE idModulo = @mod;
+DELETE FROM tblmodulo WHERE idModulo = @mod;
+DROP TABLE IF EXISTS tblcuentabancaria;</code></pre></div>
+
+  <ul class="check">
+    <li><label><input type="checkbox" data-k="g1-mod-concepto"> Entiendo que el módulo es solo un área que agrupa pantallas y sirve para buscar permisos.</label></li>
+    <li><label><input type="checkbox" data-k="g1-mod-tres"> Sé los 3 lugares donde el número de módulo debe coincidir.</label></li>
+    <li><label><input type="checkbox" data-k="g1-mod-nuevo"> Sé crear un módulo nuevo si me piden uno que no existe.</label></li>
+  </ul>
+</section>
+
+<section id="paso2" class="paso">
+  <header class="paso-head"><span class="num">2</span><div><h2>Registrar la pantalla en Seguridad (aplicación + permisos)</h2><p class="meta">⏱ 5 min · 📍 MySQL Workbench</p></div></header>
+
+  <p>El Navegador no decide permisos por su cuenta. Tú le das un <strong>módulo</strong> y una <strong>aplicación</strong>, y él le pregunta a Seguridad qué pueden hacer los <strong>roles</strong> del usuario en sesión con esa aplicación. Por eso hay que registrar la pantalla como aplicación «Productos» y darle permisos a cada rol. ¿No tienes claro qué es el módulo? Lee primero <a href="#modulos">¿Qué es el IdModulo?</a>.</p>
+
+  <svg viewBox="0 0 820 330" width="100%" role="img" aria-label="Modelo de permisos: el usuario cramirez se une a su rol Supervisor por tblusuariorol; tblrolmoduloaplicacion da al rol Supervisor Ingresar y Modificar pero no Eliminar ni Imprimir sobre el módulo 2 Inventario, aplicación Productos. Form1 apunta a ese mismo módulo y aplicación con NavegadorMetConfigurar.">
+    <defs><marker id="flecha1c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+    <!-- Usuario -->
+    <rect x="5" y="20" width="150" height="90" rx="10" class="d-box"/>
+    <text x="80" y="46" text-anchor="middle" font-size="13" class="d-muted">Usuario</text>
+    <text x="80" y="72" text-anchor="middle" font-size="16" font-weight="700" class="d-text">cramirez</text>
+    <text x="80" y="96" text-anchor="middle" font-size="13" class="d-text-sm">tblusuario</text>
+    <line x1="157" y1="65" x2="186" y2="65" class="d-line" marker-end="url(#flecha1c)"/>
+    <!-- Puente -->
+    <rect x="190" y="20" width="150" height="90" rx="10" class="d-box"/>
+    <text x="265" y="46" text-anchor="middle" font-size="13" class="d-muted">tabla puente</text>
+    <text x="265" y="72" text-anchor="middle" font-size="15" font-weight="700" class="d-text">tblusuariorol</text>
+    <text x="265" y="96" text-anchor="middle" font-size="13" class="d-text-sm">usuario ↔ rol</text>
+    <line x1="342" y1="65" x2="371" y2="65" class="d-line" marker-end="url(#flecha1c)"/>
+    <!-- Rol -->
+    <rect x="375" y="20" width="150" height="90" rx="10" class="d-box"/>
+    <text x="450" y="46" text-anchor="middle" font-size="13" class="d-muted">Rol</text>
+    <text x="450" y="72" text-anchor="middle" font-size="16" font-weight="700" class="d-text">Supervisor</text>
+    <text x="450" y="96" text-anchor="middle" font-size="13" class="d-text-sm">tblrol · id 2</text>
+    <line x1="527" y1="65" x2="556" y2="65" class="d-line" marker-end="url(#flecha1c)"/>
+    <!-- Permisos -->
+    <rect x="560" y="20" width="255" height="100" rx="10" class="d-box"/>
+    <text x="687" y="44" text-anchor="middle" font-size="14" font-weight="700" class="d-text">tblrolmoduloaplicacion</text>
+    <text x="687" y="64" text-anchor="middle" font-size="13" class="d-text-sm">rol 2 · módulo 2 · app @app</text>
+    <rect x="568" y="76" width="56" height="34" rx="6" class="d-ok"/>
+    <text x="596" y="98" text-anchor="middle" font-size="13" class="d-text">Ins ✔</text>
+    <rect x="629" y="76" width="56" height="34" rx="6" class="d-ok"/>
+    <text x="657" y="98" text-anchor="middle" font-size="13" class="d-text">Edi ✔</text>
+    <rect x="690" y="76" width="56" height="34" rx="6" class="d-bad"/>
+    <text x="718" y="98" text-anchor="middle" font-size="13" class="d-text">Eli ✘</text>
+    <rect x="751" y="76" width="56" height="34" rx="6" class="d-bad"/>
+    <text x="779" y="98" text-anchor="middle" font-size="13" class="d-text">Imp ✘</text>
+    <line x1="687" y1="122" x2="687" y2="186" class="d-line" marker-end="url(#flecha1c)"/>
+    <!-- Módulo / aplicación -->
+    <rect x="440" y="190" width="375" height="80" rx="10" class="d-accent"/>
+    <text x="627" y="216" text-anchor="middle" font-size="15" font-weight="700" class="d-text">Módulo 2 · Inventario</text>
+    <text x="627" y="240" text-anchor="middle" font-size="14" class="d-text">Aplicación «Productos» · id = @app</text>
+    <text x="627" y="260" text-anchor="middle" font-size="13" class="d-text-sm">tblmodulo / tblaplicacion</text>
+    <!-- Form1 -->
+    <rect x="5" y="190" width="375" height="80" rx="10" class="d-box"/>
+    <text x="192" y="214" text-anchor="middle" font-size="13" class="d-muted">Form1.cs</text>
+    <text x="192" y="238" text-anchor="middle" font-size="14" font-family="Consolas, 'Courier New', monospace" class="d-text">NavegadorMetConfigurar(</text>
+    <text x="192" y="258" text-anchor="middle" font-size="14" font-family="Consolas, 'Courier New', monospace" class="d-text">"tblproducto", 2, @app)</text>
+    <line x1="382" y1="230" x2="436" y2="230" class="d-line" marker-end="url(#flecha1c)"/>
+    <!-- Pie -->
+    <text x="410" y="300" text-anchor="middle" font-size="13" class="d-muted">El Navegador pide a Seguridad los permisos de los ROLES del usuario en sesión</text>
+    <text x="410" y="320" text-anchor="middle" font-size="13" class="d-muted">para ese módulo + aplicación y los combina. Sin fila para su rol → botón en gris.</text>
+  </svg>
+
+  <h3>Ejecuta el script (TODO de una vez)</h3>
+  <ol class="steps">
+    <li>En MySQL Workbench abre otra pestaña de consulta (<kbd>Ctrl</kbd>+<kbd>T</kbd>).</li>
+    <li>Pega el script completo.</li>
+    <li>Ejecuta con el rayo ⚡ simple (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd>), <strong>sin seleccionar nada</strong>. Tiene que ser en una sola ejecución porque <code>@app</code> es una variable de la sesión.</li>
+    <li>Abajo aparece una pestaña de resultado con <code>idAplicacionProductos</code>. <strong>Anota ese número.</strong></li>
+  </ol>
+
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench · registrar aplicación y permisos</span><button class="copy" type="button">Copiar</button></div><pre><code>USE dbsistemaembutidos;
+
+INSERT INTO tblaplicacion (idModulo, nombreAplicacion, descripcionAplicacion)
+VALUES (2, 'Productos', 'Mantenimiento de productos');
+
+SET @app = LAST_INSERT_ID();
+
+INSERT INTO tblrolmoduloaplicacion
+  (idRol, idModulo, idAplicacion,
+   derInsertarRolModuloAplicacion, derEditarRolModuloAplicacion,
+   derEliminarRolModuloAplicacion, derImprimirRolModuloAplicacion)
+VALUES
+  (1,  2, @app, 1, 1, 1, 1),   -- Administrador: todo
+  (2,  2, @app, 1, 1, 0, 0),   -- Supervisor: sin eliminar ni imprimir
+  (12, 2, @app, 1, 1, 0, 0);   -- PerfilExamen: sin eliminar ni imprimir
+
+SELECT @app AS idAplicacionProductos;   -- ANOTA ESTE NÚMERO</code></pre></div>
+
+  <div class="grid2">
+    <div>
+      <p><strong>Resultado esperado</strong> (el número puede variar):</p>
+      <div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th>idAplicacionProductos</th></tr></thead>
+        <tbody><tr><td><strong>16</strong></td></tr></tbody>
+      </table></div>
+    </div>
+    <div>
+      <div class="nota danger"><strong>Anota el número que salga</strong><p>Probablemente será <strong>16</strong>, pero el que vale es el tuyo. Lo vas a poner en <code>Form1.cs</code> en el paso 3.</p></div>
+    </div>
+  </div>
+
+  <div class="nota danger"><strong>¿@app salió NULL?</strong><p>Pasa si ejecutaste por partes (con el rayo de cursor o seleccionando líneas). La aplicación sí se creó; recupera su número con la consulta de abajo. Si salen <strong>dos filas</strong>, corriste el script dos veces: usa el número más alto en Form1, o limpia con <a href="#reinicio">Reiniciar la práctica</a> y empieza otra vez.</p></div>
+
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench · recuperar el número (solo si @app salió NULL)</span><button class="copy" type="button">Copiar</button></div><pre><code>SELECT idAplicacion FROM tblaplicacion WHERE nombreAplicacion = 'Productos';</code></pre></div>
+
+  <h3>Verifica los permisos</h3>
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench · verificar permisos</span><button class="copy" type="button">Copiar</button></div><pre><code>SELECT r.nombreRol,
+       p.derInsertarRolModuloAplicacion  AS ingresar,
+       p.derEditarRolModuloAplicacion    AS modificar,
+       p.derEliminarRolModuloAplicacion  AS eliminar,
+       p.derImprimirRolModuloAplicacion  AS imprimir
+FROM tblrolmoduloaplicacion p
+JOIN tblrol r ON r.idRol = p.idRol
+JOIN tblaplicacion a ON a.idAplicacion = p.idAplicacion
+WHERE a.nombreAplicacion = 'Productos';</code></pre></div>
+
+  <p><strong>Resultado esperado</strong> (3 filas):</p>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>nombreRol</th><th>ingresar</th><th>modificar</th><th>eliminar</th><th>imprimir</th></tr></thead>
+    <tbody>
+      <tr><td>Administrador</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+      <tr><td>Supervisor</td><td>1</td><td>1</td><td>0</td><td>0</td></tr>
+      <tr><td>PerfilExamen</td><td>1</td><td>1</td><td>0</td><td>0</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Quién ve qué</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Usuario</th><th>Rol</th><th>Contraseña (según manual)</th><th>Ingresar</th><th>Modificar</th><th>Eliminar</th><th>Imprimir</th></tr></thead>
+    <tbody>
+      <tr><td><code>imelendez</code></td><td>1 · Administrador</td><td><code>admin</code></td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
+      <tr><td><code>cramirez</code></td><td>2 · Supervisor</td><td><code>admin2</code> (si no entra, <code>admin3</code>)</td><td>✔</td><td>✔</td><td>✘</td><td>✘</td></tr>
+      <tr><td><code>mlopez</code></td><td>2 · Supervisor</td><td><code>admin3</code> (si no entra, <code>admin2</code>)</td><td>✔</td><td>✔</td><td>✘</td><td>✘</td></tr>
+      <tr><td><code>UsuarioExamen</code></td><td>12 · PerfilExamen</td><td>la que dé el catedrático</td><td>✔</td><td>✔</td><td>✘</td><td>✘</td></tr>
+    </tbody>
+  </table></div>
+
+  <p>Así se verá la barra según el usuario:</p>
+  <p><strong>imelendez (Administrador)</strong></p>
+  <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+  <p><strong>cramirez / mlopez / UsuarioExamen (sin Eliminar ni Imprimir)</strong></p>
+  <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb off">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb off">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+
+  <figure class="shot"><img src="img/21_cuadricula_botones.png" alt="Barra del Navegador con Eliminar e Imprimir en gris y la cuadrícula de empleados cargada debajo" loading="lazy"><figcaption>Así se ve un usuario sin permiso de Eliminar ni Imprimir: esos dos botones en gris, el resto activo. <em>(Captura del manual con tblempleado; tú verás tblproducto.)</em></figcaption></figure>
+
+  <figure class="shot"><img src="img/22_permisos_botones.png" alt="Código del Navegador que asocia Ingresar con Insertar, Modificar con Editar, Eliminar con Eliminar e Imprimir con Imprimir" loading="lazy"><figcaption>Código del Navegador: solo 4 botones dependen de permisos (Ingresar → Insertar, Modificar → Editar, Eliminar → Eliminar, Imprimir → Imprimir) y se aplican con <code>ClsCrudSeguridad(_IdModulo, _IdAplicacion)</code>. Guardar no se controla aparte porque solo sirve después de Ingresar o Modificar. <em>(Captura del manual original.)</em></figcaption></figure>
+
+  <div class="nota info"><strong>Los números del SQL son los de Form1</strong><p>El módulo <strong>2</strong> y la aplicación <strong>@app</strong> que usaste aquí son EXACTAMENTE los que van en <code>NavegadorMetConfigurar("tblproducto", 2, @app)</code>. Si no coinciden, Seguridad no encuentra permisos y los 4 botones quedan en gris.</p></div>
+
+  <div class="nota warn"><strong>Los permisos se leen al abrir el formulario</strong><p>Se aplican una sola vez, al cargar Form1. Si cambias permisos en la base, <strong>cierra la app y ábrela de nuevo</strong>. Además, el Navegador solo usa permisos por <strong>rol</strong> (<code>tblrolmoduloaplicacion</code>); los permisos por usuario (<code>tblusuariomoduloaplicacion</code>) no los toma en cuenta.</p></div>
+
+  <ul class="check">
+    <li><label><input type="checkbox" data-k="g1-p2-numero"> Anoté el número de <code>@app</code></label></li>
+    <li><label><input type="checkbox" data-k="g1-p2-verifica"> La verificación muestra Administrador, Supervisor y PerfilExamen</label></li>
+  </ul>
+</section>
+
+<section id="paso3" class="paso">
+  <header class="paso-head"><span class="num">3</span><div><h2>Apuntar el Navegador a tblproducto (1 línea)</h2><p class="meta">⏱ 2 min · 📍 Visual Studio › Form1.cs</p></div></header>
+
+  <ol class="steps">
+    <li>Abre <code>PruebaExamen.sln</code> (doble clic, o en Visual Studio: Archivo › Abrir › Proyecto o solución).</li>
+    <li>Abre el <strong>Explorador de soluciones</strong> (Ver › Explorador de soluciones, o <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>L</kbd>).</li>
+    <li>Clic derecho en <code>Form1.cs</code> › <strong>Ver código</strong> (o selecciónalo y pulsa <kbd>F7</kbd>).</li>
+    <li>Busca la línea de <code>NavegadorMetConfigurar</code> y cámbiala como se ve abajo. No borres <code>InitializeComponent();</code>.</li>
+    <li>Guarda: <kbd>Ctrl</kbd>+<kbd>S</kbd>.</li>
+  </ol>
+
+  <div class="grid2">
+    <div>
+      <h3>❌ Antes (hoy)</h3>
+      <div class="code"><div class="code-bar"><span>C# · Form1.cs · antes</span><button class="copy" type="button">Copiar</button></div><pre><code>navegador2.NavegadorMetConfigurar("tblempleado", 4, 5);</code></pre></div>
+    </div>
+    <div>
+      <h3>✅ Después</h3>
+      <div class="code"><div class="code-bar"><span>C# · Form1.cs · después</span><button class="copy" type="button">Copiar</button></div><pre><code>navegador2.NavegadorMetConfigurar("tblproducto", 2, 16);</code></pre></div>
+    </div>
+  </div>
+
+  <h3>Form1.cs completo (si prefieres reemplazar todo)</h3>
+  <div class="code"><div class="code-bar"><span>C# · Form1.cs</span><button class="copy" type="button">Copiar</button></div><pre><code>using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace PruebaExamen
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+            // tabla, IdModulo (2 = Inventario), IdAplicacion (el número de SELECT @app)
+            navegador2.NavegadorMetConfigurar("tblproducto", 2, 16);
+        }
+    }
+}</code></pre></div>
+
+  <div class="nota danger"><strong>Cambia el 16 por TU número</strong><p>El <strong>16</strong> es un ejemplo. Pon el número que te dio <code>SELECT @app</code> en el paso 2. Con otro número, Ingresar, Modificar, Eliminar e Imprimir quedan en gris.</p></div>
+
+  <h3>Qué significa cada parámetro</h3>
+  <svg viewBox="0 0 800 250" width="100%" role="img" aria-label="Los tres parámetros de NavegadorMetConfigurar: tblproducto es el nombre exacto de la tabla; 2 es el idModulo en tblmodulo, Inventario; 16 es el idAplicacion en tblaplicacion, Productos, que sale de SELECT @app.">
+    <defs><marker id="flecha1d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+    <text x="12" y="50" font-size="16" font-family="Consolas, 'Courier New', monospace" class="d-text">navegador2.NavegadorMetConfigurar(</text>
+    <rect x="344" y="28" width="140" height="34" rx="6" class="d-accent"/>
+    <text x="414" y="50" text-anchor="middle" font-size="16" font-family="Consolas, 'Courier New', monospace" class="d-text">"tblproducto"</text>
+    <text x="488" y="50" font-size="16" font-family="Consolas, 'Courier New', monospace" class="d-text">,</text>
+    <rect x="504" y="28" width="44" height="34" rx="6" class="d-accent"/>
+    <text x="526" y="50" text-anchor="middle" font-size="16" font-family="Consolas, 'Courier New', monospace" class="d-text">2</text>
+    <text x="552" y="50" font-size="16" font-family="Consolas, 'Courier New', monospace" class="d-text">,</text>
+    <rect x="568" y="28" width="52" height="34" rx="6" class="d-accent"/>
+    <text x="594" y="50" text-anchor="middle" font-size="16" font-family="Consolas, 'Courier New', monospace" class="d-text">16</text>
+    <text x="624" y="50" font-size="16" font-family="Consolas, 'Courier New', monospace" class="d-text">);</text>
+
+    <line x1="414" y1="64" x2="137" y2="137" class="d-line" marker-end="url(#flecha1d)"/>
+    <line x1="526" y1="64" x2="402" y2="137" class="d-line" marker-end="url(#flecha1d)"/>
+    <line x1="594" y1="64" x2="663" y2="137" class="d-line" marker-end="url(#flecha1d)"/>
+
+    <rect x="10" y="140" width="250" height="96" rx="10" class="d-box"/>
+    <text x="135" y="168" text-anchor="middle" font-size="16" font-weight="700" font-family="Consolas, 'Courier New', monospace" class="d-text">"tblproducto"</text>
+    <text x="135" y="194" text-anchor="middle" font-size="14" class="d-text">Nombre EXACTO de la tabla</text>
+    <text x="135" y="216" text-anchor="middle" font-size="13" class="d-text-sm">la que creaste en el paso 1</text>
+
+    <rect x="275" y="140" width="250" height="96" rx="10" class="d-box"/>
+    <text x="400" y="168" text-anchor="middle" font-size="16" font-weight="700" font-family="Consolas, 'Courier New', monospace" class="d-text">2</text>
+    <text x="400" y="194" text-anchor="middle" font-size="14" class="d-text">idModulo en tblmodulo</text>
+    <text x="400" y="216" text-anchor="middle" font-size="13" class="d-text-sm">2 = Inventario</text>
+
+    <rect x="540" y="140" width="250" height="96" rx="10" class="d-box"/>
+    <text x="665" y="168" text-anchor="middle" font-size="16" font-weight="700" font-family="Consolas, 'Courier New', monospace" class="d-text">16</text>
+    <text x="665" y="194" text-anchor="middle" font-size="14" class="d-text">idAplicacion en tblaplicacion</text>
+    <text x="665" y="216" text-anchor="middle" font-size="13" class="d-text-sm">«Productos» → tu SELECT @app</text>
+  </svg>
+  <div class="nota info"><strong>¿El 2 es «inventario» de qué?</strong><p>De nada en particular: <code>2</code> es solo el id de la fila «Inventario» en <code>tblmodulo</code>, el área de la empresa donde registraste la pantalla «Productos». No cambia qué tabla se muestra (eso lo decide el primer parámetro); solo sirve para buscar los permisos. Explicación completa en <a href="#modulos">¿Qué es el IdModulo?</a>.</p></div>
+
+
+  <div class="nota info"><strong>Opcional recomendado (1 min)</strong><p>Abre Form1 en modo diseño (doble clic en <code>Form1.cs</code>) y en <strong>Propiedades</strong> (<kbd>F4</kbd>): clic en el formulario → <code>WindowState = Maximized</code>, para que quepa la cuadrícula. Clic en la barra del Navegador → <code>Location = 0, 26</code> (hoy está en X = -5 y corta el primer botón). El nombre que usas en el código debe ser exactamente el de Propiedades › <code>(Name)</code>: <code>navegador2</code>.</p></div>
+
+  <ul class="check">
+    <li><label><input type="checkbox" data-k="g1-p3-linea"> Form1.cs dice <code>"tblproducto", 2,</code> y MI número de @app</label></li>
+    <li><label><input type="checkbox" data-k="g1-p3-guardado"> Guardé (<kbd>Ctrl</kbd>+<kbd>S</kbd>)</label></li>
+  </ul>
+</section>
+
+<section id="paso4" class="paso">
+  <header class="paso-head"><span class="num">4</span><div><h2>Pantalla de login (para entrar con cualquier usuario)</h2><p class="meta">⏱ 8 min · 📍 Visual Studio</p></div></header>
+
+  <p>El Navegador necesita una <strong>sesión de Seguridad</strong> para saber qué botones activar. Hoy <code>Program.cs</code> entra siempre como <code>imelendez</code>, pero en el examen te pueden dar otro usuario (por ejemplo <code>UsuarioExamen</code>). Por eso necesitas una pantalla donde escribir usuario y contraseña.</p>
+
+  <div class="grid2">
+    <div>
+      <div class="win"><div class="win-title">Iniciar sesión</div><div class="win-body">
+        <div class="field"><label>Usuario</label><span class="input">imelendez</span></div>
+        <div class="field"><label>Contraseña</label><span class="input">•••••</span></div>
+        <span class="btn-mock">Ingresar</span>
+      </div></div>
+      <p>Lo que vas a crear: <kbd>Enter</kbd> equivale a pulsar Ingresar.</p>
+    </div>
+    <div>
+      <div class="win"><div class="win-title">Acceso denegado</div><div class="win-body">
+        <p>⚠️ Usuario o contraseña incorrectos.</p>
+        <span class="btn-mock">Aceptar</span>
+      </div></div>
+      <p>Si te equivocas: borra la contraseña y te deja intentar otra vez.</p>
+    </div>
+  </div>
+
+  <h3>A) Crear FrmLogin.cs</h3>
+  <ol class="steps">
+    <li>En el <strong>Explorador de soluciones</strong>, clic derecho en el proyecto <strong>PruebaExamen</strong> (no en la solución) › <strong>Agregar</strong> › <strong>Formulario (Windows Forms)…</strong></li>
+    <li>En <strong>Nombre</strong> escribe <code>FrmLogin.cs</code> › <strong>Agregar</strong>.</li>
+    <li>Se abre el diseñador con un formulario vacío. <strong>No arrastres nada</strong>: el código crea los controles.</li>
+    <li>Pulsa <kbd>F7</kbd> para ver el código.</li>
+    <li>Borra TODO (<kbd>Ctrl</kbd>+<kbd>A</kbd>, <kbd>Supr</kbd>) y pega el código de abajo. Guarda (<kbd>Ctrl</kbd>+<kbd>S</kbd>).</li>
+  </ol>
+
+  <div class="code"><div class="code-bar"><span>C# · FrmLogin.cs</span><button class="copy" type="button">Copiar</button></div><pre><code>using System;
+using System.Drawing;
+using System.Windows.Forms;
+using CapaControlador_Seguridad;
+
+namespace PruebaExamen
+{
+    public partial class FrmLogin : Form
+    {
+        private readonly TextBox TxtUsuario = new TextBox();
+        private readonly TextBox TxtContrasena = new TextBox();
+        private readonly Button BtnIngresar = new Button();
+
+        public FrmLogin()
+        {
+            InitializeComponent();
+
+            Text = "Iniciar sesión";
+            StartPosition = FormStartPosition.CenterScreen;
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            MinimizeBox = false;
+            ClientSize = new Size(320, 170);
+
+            Controls.Add(new Label { Text = "Usuario", Location = new Point(20, 20), AutoSize = true });
+            TxtUsuario.SetBounds(120, 17, 180, 23);
+            Controls.Add(TxtUsuario);
+
+            Controls.Add(new Label { Text = "Contraseña", Location = new Point(20, 60), AutoSize = true });
+            TxtContrasena.SetBounds(120, 57, 180, 23);
+            TxtContrasena.UseSystemPasswordChar = true;
+            Controls.Add(TxtContrasena);
+
+            BtnIngresar.Text = "Ingresar";
+            BtnIngresar.SetBounds(120, 105, 180, 35);
+            BtnIngresar.Click += BtnIngresar_Click;
+            Controls.Add(BtnIngresar);
+            AcceptButton = BtnIngresar;
+        }
+
+        private void BtnIngresar_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Valida contra tblusuario (BCrypt) y deja la sesión de Seguridad iniciada
+                if (new ClsModeloUsuario().SeguridadMetIniciarSesion(TxtUsuario.Text.Trim(), TxtContrasena.Text))
+                {
+                    DialogResult = DialogResult.OK;   // cierra el login; Program abre Form1
+                }
+                else
+                {
+                    MessageBox.Show("Usuario o contraseña incorrectos.", "Acceso denegado",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    TxtContrasena.Clear();
+                    TxtContrasena.Focus();
+                }
+            }
+            catch (Exception Excepcion)
+            {
+                MessageBox.Show("No se pudo conectar con Seguridad (revise el DSN EmbutidosS.A).\n\n" + Excepcion.Message,
+                    "Error de conexión", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+    }
+}</code></pre></div>
+
+  <div class="nota warn"><strong>«Contrasena» sin ñ, a propósito</strong><p>En los nombres de variables (<code>TxtContrasena</code>) se escribe sin ñ para evitar problemas. Los textos que ve el usuario («Contraseña») sí llevan ñ. No lo «corrijas».</p></div>
+
+  <h3>B) Reemplazar Program.cs</h3>
+  <div class="grid2">
+    <div>
+      <p><strong>❌ Antes:</strong> inicia sesión fija con <code>imelendez</code> / <code>admin</code> sin preguntar nada y abre Form1.</p>
+    </div>
+    <div>
+      <p><strong>✅ Después:</strong> muestra FrmLogin; solo si el usuario entra bien abre Form1. Se <strong>quita</strong> el login fijo de imelendez.</p>
+    </div>
+  </div>
+  <ol class="steps">
+    <li>En el Explorador de soluciones, doble clic en <code>Program.cs</code>.</li>
+    <li>Borra TODO (<kbd>Ctrl</kbd>+<kbd>A</kbd>, <kbd>Supr</kbd>) y pega el código de abajo.</li>
+    <li>Guarda (<kbd>Ctrl</kbd>+<kbd>S</kbd>).</li>
+  </ol>
+
+  <div class="code"><div class="code-bar"><span>C# · Program.cs</span><button class="copy" type="button">Copiar</button></div><pre><code>using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace PruebaExamen
+{
+    internal static class Program
+    {
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            // 1) Login: sin sesión de Seguridad el Navegador deja los botones deshabilitados
+            using (FrmLogin Login = new FrmLogin())
+            {
+                if (Login.ShowDialog() != DialogResult.OK)
+                    return;   // cerraron el login sin entrar
+            }
+
+            // 2) Ya hay sesión: se abre el formulario con el Navegador
+            Application.Run(new Form1());
+        }
+    }
+}</code></pre></div>
+
+  <h3>Cómo funciona al ejecutar</h3>
+  <svg viewBox="0 0 820 245" width="100%" role="img" aria-label="Flujo del login: F5 abre FrmLogin; con usuario válido se inicia la sesión en ClsSesionSeguridad y se registra LOGIN en tblbitacora, luego se abre Form1 y navegador2 aplica los permisos del rol. Si se cancela o se cierra con la X, la app se cierra. Si el usuario o la contraseña están mal, sale un mensaje y vuelve a pedir la contraseña.">
+    <defs><marker id="flecha1e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+    <rect x="4" y="20" width="70" height="90" rx="10" class="d-box"/>
+    <text x="39" y="62" text-anchor="middle" font-size="18" font-weight="700" class="d-text">F5</text>
+    <text x="39" y="86" text-anchor="middle" font-size="13" class="d-text-sm">ejecutar</text>
+    <line x1="76" y1="65" x2="101" y2="65" class="d-line" marker-end="url(#flecha1e)"/>
+
+    <rect x="104" y="20" width="140" height="90" rx="10" class="d-box"/>
+    <text x="174" y="50" text-anchor="middle" font-size="15" font-weight="700" class="d-text">FrmLogin</text>
+    <text x="174" y="74" text-anchor="middle" font-size="13" class="d-text-sm">usuario +</text>
+    <text x="174" y="94" text-anchor="middle" font-size="13" class="d-text-sm">contraseña</text>
+    <line x1="246" y1="65" x2="277" y2="65" class="d-line" marker-end="url(#flecha1e)"/>
+    <text x="261" y="56" text-anchor="middle" font-size="13" class="d-text-sm">OK</text>
+
+    <rect x="280" y="20" width="206" height="90" rx="10" class="d-ok"/>
+    <text x="383" y="48" text-anchor="middle" font-size="15" font-weight="700" class="d-text">Sesión iniciada</text>
+    <text x="383" y="72" text-anchor="middle" font-size="14" class="d-text">ClsSesionSeguridad</text>
+    <text x="383" y="94" text-anchor="middle" font-size="13" class="d-text-sm">+ fila LOGIN en tblbitacora</text>
+    <line x1="488" y1="65" x2="509" y2="65" class="d-line" marker-end="url(#flecha1e)"/>
+
+    <rect x="512" y="20" width="110" height="90" rx="10" class="d-box"/>
+    <text x="567" y="60" text-anchor="middle" font-size="15" font-weight="700" class="d-text">Form1</text>
+    <text x="567" y="84" text-anchor="middle" font-size="13" class="d-text-sm">se abre</text>
+    <line x1="624" y1="65" x2="647" y2="65" class="d-line" marker-end="url(#flecha1e)"/>
+
+    <rect x="650" y="20" width="166" height="90" rx="10" class="d-accent"/>
+    <text x="733" y="48" text-anchor="middle" font-size="15" font-weight="700" class="d-text">navegador2</text>
+    <text x="733" y="72" text-anchor="middle" font-size="13" class="d-text-sm">aplica permisos</text>
+    <text x="733" y="94" text-anchor="middle" font-size="13" class="d-text-sm">del rol (al cargar)</text>
+
+    <line x1="150" y1="112" x2="118" y2="167" class="d-line" marker-end="url(#flecha1e)"/>
+    <line x1="200" y1="112" x2="368" y2="167" class="d-line" marker-end="url(#flecha1e)"/>
+
+    <rect x="4" y="170" width="220" height="62" rx="10" class="d-bad"/>
+    <text x="114" y="196" text-anchor="middle" font-size="14" font-weight="700" class="d-text">Cancelar / X</text>
+    <text x="114" y="218" text-anchor="middle" font-size="13" class="d-text-sm">la app se cierra</text>
+
+    <rect x="250" y="170" width="300" height="62" rx="10" class="d-bad"/>
+    <text x="400" y="196" text-anchor="middle" font-size="14" font-weight="700" class="d-text">Usuario o contraseña mal</text>
+    <text x="400" y="218" text-anchor="middle" font-size="13" class="d-text-sm">mensaje y vuelve a pedir la contraseña</text>
+  </svg>
+
+  <ul class="check">
+    <li><label><input type="checkbox" data-k="g1-p4-frmlogin"> <code>FrmLogin.cs</code> creado y pegado</label></li>
+    <li><label><input type="checkbox" data-k="g1-p4-program"> <code>Program.cs</code> reemplazado</label></li>
+  </ul>
+</section>
+
+<section id="paso5" class="paso">
+  <header class="paso-head"><span class="num">5</span><div><h2>Compilar y ejecutar</h2><p class="meta">⏱ 3 min · 📍 Visual Studio</p></div></header>
+
+  <ol class="steps">
+    <li>Guarda todo: <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>.</li>
+    <li>Menú <strong>Compilar › Compilar solución</strong> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd>).</li>
+    <li>En la ventana <strong>Salida</strong> (Ver › Salida si no aparece) debe decir <code>1 correctos, 0 con errores</code> (en inglés: <code>1 succeeded, 0 failed</code>).</li>
+    <li>Si aparece la advertencia <strong>MSB3270</strong> (discordancia de arquitectura «MSIL» y «AMD64»), es normal: ignórala. Es advertencia, no error.</li>
+    <li>Pulsa <kbd>F5</kbd>. Aparece la ventana <strong>Iniciar sesión</strong>.</li>
+    <li>Escribe <code>imelendez</code> / <code>admin</code> y pulsa <strong>Ingresar</strong> (o <kbd>Enter</kbd>).</li>
+    <li>Se abre Form1 con la barra del Navegador. La cuadrícula está oculta: pulsa <strong>Refrescar</strong> para cargarla. Saldrá sin filas porque todavía no hay productos (los agregas en el paso 6).</li>
+  </ol>
+
+  <h3>Qué debes ver (imelendez = Administrador)</h3>
+  <p>Los 14 botones <strong>activos</strong>:</p>
+  <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+
+  <figure class="shot"><img src="img/05_crud_cuadricula.png" alt="Ventana del Navegador con la barra de 14 botones y la cuadrícula cargada con registros" loading="lazy"><figcaption>Así se ve el Navegador con la cuadrícula cargada. En esta captura Eliminar e Imprimir están en gris porque ese usuario no tenía esos permisos; con <code>imelendez</code> los verás activos. <em>(Captura del manual con tblempleado; tú verás tblproducto.)</em></figcaption></figure>
+
+  <h3>Si algo falla aquí</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Mensaje o síntoma</th><th>Causa</th><th>Qué hacer</th></tr></thead>
+    <tbody>
+      <tr><td>«No se pudo conectar con Seguridad…» + <code>Data source name not found</code></td><td>El DSN <code>EmbutidosS.A</code> no existe en 64 bits</td><td>Inicio › «Orígenes de datos ODBC (64 bits)» › EmbutidosS.A › Configurar › <strong>Test</strong> (ver captura abajo).</td></tr>
+      <tr><td>«No se pudo conectar con Seguridad…» + <code>Can't connect to MySQL server</code></td><td>MySQL está apagado</td><td><kbd>Win</kbd>+<kbd>R</kbd> › <code>services.msc</code> › <strong>MySQL80</strong> › Iniciar.</td></tr>
+      <tr><td><code>BadImageFormatException</code></td><td>El proyecto corre en 32 bits y las DLL son x64</td><td>Proyecto › Propiedades › Compilación › desmarcar «Preferir 32 bits» (ya lo tienes; revisa que siga así).</td></tr>
+      <tr><td>«El nombre 'navegador2' no existe en el contexto actual»</td><td>El control se llama distinto</td><td>Diseñador de Form1 › clic en la barra › Propiedades › <code>(Name)</code>. Usa ese nombre en el código.</td></tr>
+      <tr><td>«El nombre 'InitializeComponent' no existe en el contexto actual» en FrmLogin</td><td>El formulario se creó con otro nombre (p. ej. Form2)</td><td>Elimínalo y créalo otra vez con el nombre exacto <code>FrmLogin.cs</code>.</td></tr>
+      <tr><td>Ingresar / Modificar / Eliminar / Imprimir en gris con imelendez</td><td>El número de aplicación en Form1 no es el de <code>@app</code>, o ese rol no tiene fila en <code>tblrolmoduloaplicacion</code></td><td>Corre la verificación del <a href="#paso2">paso 2</a> y compara el número con Form1. Cierra y vuelve a abrir la app.</td></tr>
+      <tr><td>«La tabla indicada no existe…»</td><td>Nombre de tabla mal escrito</td><td>Debe ser exactamente <code>"tblproducto"</code>.</td></tr>
+      <tr><td>«No hay una sesión activa. Inicie sesión desde el Login de Seguridad para habilitar el Navegador.»</td><td>Form1 se abrió sin login</td><td>Revisa que <code>Program.cs</code> quedó igual al del <a href="#paso4">paso 4</a>.</td></tr>
+      <tr><td>«Usuario o contraseña incorrectos.»</td><td>Contraseña equivocada</td><td>imelendez / <code>admin</code> (según el manual). Revisa Bloq Mayús.</td></tr>
+    </tbody>
+  </table></div>
+
+  <figure class="shot"><img src="img/11_configuracion_odbc.png" alt="Administrador de orígenes de datos ODBC de 64 bits con el DSN EmbutidosS.A configurado hacia localhost puerto 3306, usuario root, base dbsistemaembutidos, y la prueba con Connection successful" loading="lazy"><figcaption>Cómo debe estar el DSN: «Orígenes de datos ODBC (64 bits)» › <strong>EmbutidosS.A</strong> › localhost, puerto 3306, usuario <code>root</code>, base <code>dbsistemaembutidos</code>. El botón <strong>Test</strong> debe decir «Connection successful». <em>(Captura del manual original.)</em></figcaption></figure>
+
+  <ul class="check">
+    <li><label><input type="checkbox" data-k="g1-p5-compila"> Compila: 1 correctos, 0 con errores</label></li>
+    <li><label><input type="checkbox" data-k="g1-p5-login"> Entré con imelendez y veo los 14 botones activos</label></li>
+    <li><label><input type="checkbox" data-k="g1-p5-refrescar"> Refrescar muestra la cuadrícula de tblproducto (vacía)</label></li>
+  </ul>
+
+  <p><a href="#paso6"><strong>Siguiente: demostrar el CRUD →</strong></a></p>
+</section>

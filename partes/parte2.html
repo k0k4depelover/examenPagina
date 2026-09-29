@@ -1,0 +1,862 @@
+<!-- ===================== PARTE 2: demostración y referencia ===================== -->
+
+<section id="paso6" class="paso">
+  <header class="paso-head"><span class="num">6</span><div><h2>Demostrar el CRUD completo</h2><p class="meta">⏱ 15 min · 📍 La app en ejecución (usuario imelendez)</p></div></header>
+
+  <p>Ejecuta con <kbd>F5</kbd> e inicia sesión con <strong>imelendez</strong> / <strong>admin</strong> (rol 1 Administrador). Tiene los 4 permisos, así que los 14 botones deben estar activos:</p>
+
+  <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+
+  <p>Sigue este orden. En cada paso va resaltado el botón que tienes que pulsar. Antes de empezar, fíjate en el dibujo: el Navegador <strong>crece hacia abajo</strong> según lo que estés haciendo.</p>
+
+  <svg viewBox="0 0 800 275" width="100%" role="img" aria-label="Tres estados del Navegador. Al abrir solo se ve la barra de botones. Después de Refrescar o Consultar aparece la cuadrícula. Después de Ingresar o Modificar aparece el panel del registro encima de la cuadrícula. Salir vuelve al primer estado y Cancelar cierra solo el panel.">
+    <defs><marker id="flecha2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+    <text x="120" y="20" text-anchor="middle" class="d-text" font-size="15">1. Al abrir</text>
+    <text x="400" y="20" text-anchor="middle" class="d-text" font-size="15">2. Tras Refrescar</text>
+    <text x="680" y="20" text-anchor="middle" class="d-text" font-size="15">3. Tras Ingresar</text>
+
+    <rect x="20" y="30" width="200" height="170" rx="8" class="d-box"/>
+    <rect x="30" y="42" width="180" height="28" rx="4" class="d-accent"/>
+    <text x="120" y="61" text-anchor="middle" class="d-text-sm" font-size="13">barra de 14 botones</text>
+    <text x="120" y="135" text-anchor="middle" class="d-muted" font-size="13">(cuadrícula oculta)</text>
+
+    <rect x="300" y="30" width="200" height="170" rx="8" class="d-box"/>
+    <rect x="310" y="42" width="180" height="28" rx="4" class="d-accent"/>
+    <text x="400" y="61" text-anchor="middle" class="d-text-sm" font-size="13">barra de 14 botones</text>
+    <rect x="310" y="80" width="180" height="110" rx="4" class="d-box"/>
+    <line x1="310" y1="100" x2="490" y2="100" class="d-line"/>
+    <line x1="310" y1="120" x2="490" y2="120" class="d-line"/>
+    <line x1="310" y1="140" x2="490" y2="140" class="d-line"/>
+    <text x="400" y="172" text-anchor="middle" class="d-text-sm" font-size="13">cuadrícula</text>
+
+    <rect x="580" y="30" width="200" height="170" rx="8" class="d-box"/>
+    <rect x="590" y="42" width="180" height="28" rx="4" class="d-accent"/>
+    <text x="680" y="61" text-anchor="middle" class="d-text-sm" font-size="13">barra de 14 botones</text>
+    <rect x="590" y="78" width="180" height="58" rx="4" class="d-ok"/>
+    <text x="680" y="102" text-anchor="middle" class="d-text-sm" font-size="13">panel del registro</text>
+    <text x="680" y="122" text-anchor="middle" class="d-text-sm" font-size="13">(Nuevo / Modificar)</text>
+    <rect x="590" y="142" width="180" height="48" rx="4" class="d-box"/>
+    <text x="680" y="171" text-anchor="middle" class="d-text-sm" font-size="13">cuadrícula</text>
+
+    <line x1="226" y1="118" x2="294" y2="118" class="d-line" marker-end="url(#flecha2a)"/>
+    <text x="260" y="104" text-anchor="middle" class="d-text-sm" font-size="13">Refrescar</text>
+    <text x="260" y="140" text-anchor="middle" class="d-text-sm" font-size="13">o Consultar</text>
+    <line x1="506" y1="118" x2="574" y2="118" class="d-line" marker-end="url(#flecha2a)"/>
+    <text x="540" y="104" text-anchor="middle" class="d-text-sm" font-size="13">Ingresar</text>
+    <text x="540" y="140" text-anchor="middle" class="d-text-sm" font-size="13">o Modificar</text>
+
+    <path d="M680,200 L680,222 L120,222 L120,206" fill="none" class="d-line" marker-end="url(#flecha2a)"/>
+    <text x="400" y="244" text-anchor="middle" class="d-text-sm" font-size="13">Salir: contrae todo y deja solo la barra (NO cierra el formulario)</text>
+    <text x="400" y="266" text-anchor="middle" class="d-muted" font-size="13">Cancelar: cierra solo el panel del registro (vuelves al estado 2)</text>
+  </svg>
+
+  <!-- 6.1 -->
+  <h3>6.1 Cargar la cuadrícula (Refrescar)</h3>
+  <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb hot">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+  <ol class="steps">
+    <li>Al abrir, el formulario enseña <strong>solo la barra</strong>. Que la cuadrícula no se vea es normal, no es un error.</li>
+    <li>Pulsa <strong>Refrescar</strong>.</li>
+    <li>Debajo aparece la cuadrícula con las columnas de <code>tblproducto</code>: idProducto, idCategoria, nombreProducto, precioProducto, fechaVencimiento e is_active. Si todavía no hay productos, solo verás los encabezados.</li>
+  </ol>
+  <figure class="shot"><img src="img/21_cuadricula_botones.png" alt="Barra de 14 botones con la cuadrícula cargada debajo" loading="lazy"><figcaption>Así queda después de Refrescar: la barra arriba y la cuadrícula debajo. En el manual Eliminar e Imprimir aparecen en gris porque aquel usuario no tenía esos permisos; con imelendez te saldrán activos. <em>(Captura del manual con tblempleado; tú verás tblproducto.)</em></figcaption></figure>
+
+  <!-- 6.2 -->
+  <h3>6.2 Ingresar productos</h3>
+  <div class="navbar-mock"><span class="nb hot">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+  <ol class="steps">
+    <li>Pulsa <strong>Ingresar</strong>. Encima de la cuadrícula se abre el panel <strong>"Nuevo registro - tblproducto"</strong>.</li>
+    <li>Llena los campos como en el dibujo. <strong>idProducto déjalo vacío</strong>: aparece editable (el driver ODBC de MySQL no avisa que es AUTO_INCREMENT), pero si lo dejas en blanco MySQL pone el número solo.</li>
+    <li>Pulsa <strong>Guardar</strong> (barra de abajo).</li>
+    <li>Aparece <strong>"Confirmar ingreso"</strong> con el resumen de lo que se va a guardar. Pulsa <strong>Yes</strong>.</li>
+    <li>Aparece <strong>"Guardado exitoso"</strong> con el texto <em>Registro guardado correctamente.</em> Pulsa <strong>OK</strong>. El panel se cierra y la cuadrícula se recarga con el producto nuevo.</li>
+    <li>Haz lo mismo con los otros dos productos de la tabla.</li>
+  </ol>
+
+  <div class="grid2">
+    <div>
+      <div class="win"><div class="win-title">Nuevo registro - tblproducto</div><div class="win-body">
+        <div class="field"><label>idProducto [PK]</label><span class="input"></span></div>
+        <div class="field"><label>idCategoria</label><span class="input combo">Chorizos ▾</span></div>
+        <div class="field"><label>nombreProducto</label><span class="input">Chorizo parrillero</span></div>
+        <div class="field"><label>precioProducto</label><span class="input">25.50</span></div>
+        <div class="field"><label>fechaVencimiento</label><span class="input date">31/03/2027 ▾</span></div>
+        <div class="field"><label>is_active</label><span class="chk">☑ Sí (marcado) / No (desmarcado)</span></div>
+      </div></div>
+    </div>
+    <div>
+      <p><strong>Datos para los 3 productos</strong> (deja is_active marcado):</p>
+      <div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th>nombreProducto</th><th>idCategoria (combo)</th><th>precioProducto</th><th>fechaVencimiento</th></tr></thead>
+        <tbody>
+          <tr><td>Chorizo parrillero</td><td>Chorizos</td><td>25.50</td><td>31/03/2027</td></tr>
+          <tr><td>Jamón de pavo</td><td>Jamones</td><td>42.00</td><td>30/04/2027</td></tr>
+          <tr><td>Salchicha Viena</td><td>Salchichas</td><td>18.75</td><td>31/05/2027</td></tr>
+        </tbody>
+      </table></div>
+      <p>Después de llenar el panel, pulsa:</p>
+      <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb hot">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+    </div>
+  </div>
+
+  <div class="nota info"><strong>La fecha depende de Windows</strong><p>El calendario usa el formato corto de la configuración regional (en las capturas del manual sale como 9/23/2026). Da igual el formato: basta con elegir en el calendario una fecha futura. En el precio, <code>25.50</code> se acepta sin problema.</p></div>
+
+  <p><strong>¿Por qué cada campo sale así?</strong> El Navegador no trae ningún formulario hecho a mano: lee de MySQL la estructura de la tabla y crea un control para cada columna.</p>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Columna</th><th>Tipo en MySQL</th><th>Control que crea</th><th>Validación automática</th></tr></thead>
+    <tbody>
+      <tr><td>idProducto</td><td>INT AUTO_INCREMENT PK</td><td>TextBox editable (etiqueta roja [PK])</td><td>Déjalo vacío: MySQL lo numera. Si repites un número existente: "Ya existe un registro con el mismo valor en un campo único." Al modificar queda bloqueada.</td></tr>
+      <tr><td>idCategoria</td><td>INT NOT NULL + FK</td><td>ComboBox con <em>nombreCategoria</em></td><td>Obligatorio; solo valores de la tabla de categorías</td></tr>
+      <tr><td>nombreProducto</td><td>VARCHAR(100) NOT NULL</td><td>TextBox</td><td>Obligatorio y 100 caracteres como máximo</td></tr>
+      <tr><td>precioProducto</td><td>DECIMAL(10,2) NOT NULL</td><td>TextBox</td><td>Obligatorio; tiene que ser decimal</td></tr>
+      <tr><td>fechaVencimiento</td><td>DATE NOT NULL</td><td>DateTimePicker (fecha corta)</td><td>Tiene que ser una fecha</td></tr>
+      <tr><td>is_active</td><td>TINYINT(1) DEFAULT 1</td><td>CheckBox "Sí (marcado) / No (desmarcado)"</td><td>Booleano (1 / 0)</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="grid2">
+    <div>
+      <div class="win"><div class="win-title">Confirmar ingreso</div><div class="win-body">
+        <p>❓ ¿Desea ingresar el siguiente registro en la tabla 'tblproducto'?</p>
+        <p>idCategoria: 1<br>nombreProducto: Chorizo parrillero<br>precioProducto: 25.50<br>fechaVencimiento: 2027-03-31<br>is_active: 1</p>
+        <p><span class="btn-mock">Yes</span> <span class="btn-mock">No</span></p>
+      </div></div>
+    </div>
+    <div>
+      <div class="win"><div class="win-title">Guardado exitoso</div><div class="win-body">
+        <p>ℹ Registro guardado correctamente.</p>
+        <p><span class="btn-mock">OK</span></p>
+      </div></div>
+      <p>En el resumen no sale idProducto porque lo dejaste vacío (lo asigna MySQL), y la categoría aparece como número (1 = Chorizos): eso es lo que se guarda de verdad en la FK.</p>
+    </div>
+  </div>
+
+  <figure class="shot"><img src="img/14_confirmacion_ingreso.png" alt="Ventana Confirmar ingreso con la lista de campos y botones Yes y No" loading="lazy"><figcaption>La ventana "Confirmar ingreso" enseña los campos antes de guardar. Pulsa Yes. En tu caso idProducto no sale en la lista, porque es autoincremental. <em>(Captura del manual con tblempleado; tú verás tblproducto.)</em></figcaption></figure>
+  <figure class="shot"><img src="img/15_registro_guardado.png" alt="Cuadrícula con el registro nuevo seleccionado al final" loading="lazy"><figcaption>Después de "Registro guardado correctamente." la cuadrícula se recarga y el registro nuevo aparece al final. <em>(Captura del manual con tblempleado; tú verás tblproducto.)</em></figcaption></figure>
+
+  <div class="nota ok"><strong>Qué debes ver con los 3 productos</strong><p>Tres filas en la cuadrícula. idCategoria sale como número porque la cuadrícula enseña la tabla tal cual (SELECT *). is_active puede salir como casilla o como 1.</p></div>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>idProducto</th><th>idCategoria</th><th>nombreProducto</th><th>precioProducto</th><th>fechaVencimiento</th><th>is_active</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>1</td><td>Chorizo parrillero</td><td>25.50</td><td>31/03/2027</td><td>☑</td></tr>
+      <tr><td>2</td><td>2</td><td>Jamón de pavo</td><td>42.00</td><td>30/04/2027</td><td>☑</td></tr>
+      <tr><td>3</td><td>3</td><td>Salchicha Viena</td><td>18.75</td><td>31/05/2027</td><td>☑</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- 6.3 -->
+  <h3>6.3 Validaciones (provócalas a propósito)</h3>
+  <div class="navbar-mock"><span class="nb hot">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb hot">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+  <ol class="steps">
+    <li>Pulsa <strong>Ingresar</strong>.</li>
+    <li>Deja <strong>nombreProducto vacío</strong> y en <strong>precioProducto</strong> escribe <code>abc</code>.</li>
+    <li>Pulsa <strong>Guardar</strong>.</li>
+    <li>Sale la ventana <strong>"Validación de datos"</strong> (con el ícono ⚠) y los dos errores juntos, uno en cada línea.</li>
+    <li>Pulsa <strong>OK</strong>. El panel sigue abierto con lo que escribiste, para que lo corrijas o pulses <strong>Cancelar</strong>.</li>
+  </ol>
+  <div class="grid2">
+    <div>
+      <div class="win"><div class="win-title">Validación de datos</div><div class="win-body">
+        <p>⚠ El atributo 'nombreProducto' es obligatorio.<br>El atributo 'precioProducto' debe ser de tipo decimal.</p>
+        <p><span class="btn-mock">OK</span></p>
+      </div></div>
+    </div>
+    <div>
+      <div class="nota info"><strong>Las validaciones son dinámicas</strong><p>No hay ninguna regla programada para tblproducto. El Navegador saca el tipo de cada columna de la base: NOT NULL la vuelve obligatoria, DECIMAL exige un decimal, INT un entero, DATE una fecha y VARCHAR(100) un máximo de 100 caracteres. Con otra tabla, las reglas cambian solas.</p></div>
+      <p>Otra prueba que puedes hacer: escribe más de 100 caracteres en nombreProducto y te dirá <em>"El atributo 'nombreProducto' admite como máximo 100 caracteres."</em></p>
+    </div>
+  </div>
+  <div class="nota warn"><strong>Si te preguntan qué le falta</strong><p>Un precio negativo (<code>-5</code>) <strong>se acepta</strong>, porque sigue siendo un decimal válido. Solo se valida el <em>tipo</em>, no las <em>reglas de negocio</em>. Es una mejora que puedes proponer.</p></div>
+
+  <!-- 6.4 -->
+  <h3>6.4 Modificar</h3>
+  <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb hot">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+  <ol class="steps">
+    <li>Pulsa <strong>Refrescar</strong> para que se vea la cuadrícula.</li>
+    <li>Haz <strong>clic en la fila</strong> de "Chorizo parrillero".</li>
+    <li>Pulsa <strong>Modificar</strong>. Se abre <strong>"Modificar registro - tblproducto"</strong> con los datos de esa fila; idProducto aparece <strong>gris y bloqueado</strong>.</li>
+    <li>Cambia el precio de <code>25.50</code> a <code>27.00</code>.</li>
+    <li>Pulsa <strong>Guardar</strong>. Sale <strong>"Confirmar modificación"</strong>: <em>¿Desea guardar los cambios en la tabla 'tblproducto'?</em>. Pulsa <strong>Yes</strong>.</li>
+    <li><em>Registro guardado correctamente.</em> Pulsa <strong>OK</strong> y la cuadrícula ya enseña 27.00.</li>
+  </ol>
+  <div class="grid2">
+    <div>
+      <div class="win"><div class="win-title">Modificar registro - tblproducto</div><div class="win-body">
+        <div class="field"><label>idProducto [PK]</label><span class="input gray">1</span></div>
+        <div class="field"><label>idCategoria</label><span class="input combo">Chorizos ▾</span></div>
+        <div class="field"><label>nombreProducto</label><span class="input">Chorizo parrillero</span></div>
+        <div class="field"><label>precioProducto</label><span class="input">27.00</span></div>
+        <div class="field"><label>fechaVencimiento</label><span class="input date">31/03/2027 ▾</span></div>
+        <div class="field"><label>is_active</label><span class="chk">☑ Sí (marcado) / No (desmarcado)</span></div>
+      </div></div>
+    </div>
+    <div>
+      <div class="win"><div class="win-title">Confirmar modificación</div><div class="win-body">
+        <p>❓ ¿Desea guardar los cambios en la tabla 'tblproducto'?</p>
+        <p>idCategoria: 1<br>nombreProducto: Chorizo parrillero<br>precioProducto: 27.00<br>…</p>
+        <p><span class="btn-mock">Yes</span> <span class="btn-mock">No</span></p>
+      </div></div>
+      <p>Si pulsas Modificar sin haber elegido una fila, sale: <em>"Seleccione un registro en la tabla para Modificar."</em></p>
+    </div>
+  </div>
+  <figure class="shot"><img src="img/17_formulario_modificar.png" alt="Panel Modificar registro con la llave primaria en gris bloqueada" loading="lazy"><figcaption>En "Modificar registro" la PK sale en gris y no se puede cambiar, porque es la que identifica la fila en el UPDATE. <em>(Captura del manual con tblempleado; tú verás tblproducto.)</em></figcaption></figure>
+
+  <!-- 6.5 -->
+  <h3>6.5 Consultar (buscar con filtro)</h3>
+  <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb hot">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+  <ol class="steps">
+    <li>Pulsa <strong>Consultar</strong>. Se abre la ventana <strong>ConsultasSimples</strong>, que es del <strong>componente Consultas</strong>, no del Navegador.</li>
+    <li>En <strong>Agregar Filtro</strong> elige Campo = <code>nombreProducto</code>, Operador = <code>Contiene</code> y escribe Valor = <code>Jam</code>.</li>
+    <li>Pulsa <strong>Buscar</strong>: solo queda "Jamón de pavo".</li>
+    <li>Haz <strong>doble clic</strong> en esa fila. La ventana se cierra y la cuadrícula del Navegador queda <strong>filtrada</strong> a ese registro (por su llave primaria).</li>
+    <li>Desde ahí puedes pulsar Modificar o Eliminar sobre ese registro.</li>
+    <li>Pulsa <strong>Refrescar</strong> para volver a verlo todo.</li>
+  </ol>
+  <div class="grid2">
+    <div>
+      <div class="win"><div class="win-title">ConsultasSimples</div><div class="win-body">
+        <p><strong>Agregar Filtro</strong></p>
+        <div class="field"><label>Campo</label><span class="input combo">nombreProducto ▾</span></div>
+        <div class="field"><label>Operador</label><span class="input combo">Contiene ▾</span></div>
+        <div class="field"><label>Valor</label><span class="input">Jam</span></div>
+        <p><span class="btn-mock">Buscar</span> <span class="btn-mock">Refrescar</span> <span class="btn-mock">Ayuda</span> <span class="btn-mock">Consultas Complejas</span> <span class="btn-mock">Salir</span></p>
+        <p>2 · 2 · Jamón de pavo · 42.00 · … ← <strong>doble clic</strong></p>
+      </div></div>
+    </div>
+    <div>
+      <p><strong>Operadores disponibles:</strong> <code>=</code>, <code>&lt;&gt;</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>, Contiene, Comienza con y Termina con.</p>
+      <div class="nota info"><strong>Si cierras sin elegir</strong><p>La cuadrícula del Navegador se queda como estaba, con todos los registros. El filtro solo se aplica cuando eliges un registro.</p></div>
+    </div>
+  </div>
+
+  <!-- 6.6 -->
+  <h3>6.6 Eliminar</h3>
+  <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb hot">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+  <div class="nota info"><strong>Truco para no perder tus 3 productos</strong><p>Antes de esto, ingresa un cuarto producto, por ejemplo "Producto de prueba" / Chorizos / 1.00, y elimina ese.</p></div>
+  <ol class="steps">
+    <li>Pulsa <strong>Refrescar</strong> y haz clic en la fila que vas a borrar.</li>
+    <li>Pulsa <strong>Eliminar</strong>. Sale <strong>"Confirmar eliminación"</strong>: <em>¿Desea eliminar el registro seleccionado de la tabla 'tblproducto'?</em>. Pulsa <strong>Yes</strong>.</li>
+    <li>Sale <strong>"Eliminación exitosa"</strong> con <em>Registro eliminado correctamente.</em> y la fila desaparece de la cuadrícula.</li>
+  </ol>
+  <div class="grid2">
+    <div>
+      <div class="win"><div class="win-title">Confirmar eliminación</div><div class="win-body">
+        <p>❓ ¿Desea eliminar el registro seleccionado de la tabla 'tblproducto'?</p>
+        <p><span class="btn-mock">Yes</span> <span class="btn-mock">No</span></p>
+      </div></div>
+    </div>
+    <div>
+      <div class="win"><div class="win-title">Eliminación exitosa</div><div class="win-body">
+        <p>ℹ Registro eliminado correctamente.</p>
+        <p><span class="btn-mock">OK</span></p>
+      </div></div>
+    </div>
+  </div>
+  <p>Si no había ninguna fila seleccionada, sale: <em>"Seleccione un registro en la tabla para eliminar."</em></p>
+  <div class="nota warn"><strong>Es un borrado FÍSICO</strong><p>El Navegador hace un <code>DELETE</code> y el registro desaparece de la base, aunque la tabla tenga <code>is_active</code>. Si te preguntan, el borrado lógico sería poner <code>is_active = 0</code>; es otra mejora que puedes proponer.</p></div>
+
+  <!-- 6.7 -->
+  <h3>6.7 Navegar entre filas</h3>
+  <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb hot">Inicio</span><span class="nb hot">Anterior</span><span class="nb hot">Siguiente</span><span class="nb hot">Fin</span><span class="nb">Salir</span></div>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Botón</th><th>Qué hace con la fila seleccionada</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Inicio</strong></td><td>Salta a la primera fila</td></tr>
+      <tr><td><strong>Anterior</strong></td><td>Sube una fila</td></tr>
+      <tr><td><strong>Siguiente</strong></td><td>Baja una fila</td></tr>
+      <tr><td><strong>Fin</strong></td><td>Salta a la última fila</td></tr>
+    </tbody>
+  </table></div>
+  <ol class="steps">
+    <li>Con la cuadrícula visible (Refrescar), pulsa <strong>Fin</strong>, luego <strong>Anterior</strong> y después <strong>Inicio</strong>. Fíjate en la marca ▶ y en la fila resaltada en azul, que se van moviendo.</li>
+    <li>Para que se vea que todo está conectado, pulsa <strong>Modificar</strong>: se abre la fila a la que llegaste con los botones.</li>
+  </ol>
+
+  <!-- 6.8 -->
+  <h3>6.8 Cancelar y Salir (no son lo mismo)</h3>
+  <div class="grid2">
+    <div>
+      <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb hot">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+      <p><strong>Cancelar:</strong> abre Ingresar, escribe algo y pulsa Cancelar. El panel se cierra <strong>sin guardar nada</strong> y la cuadrícula se queda donde estaba.</p>
+    </div>
+    <div>
+      <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb hot">Salir</span></div>
+      <p><strong>Salir:</strong> <strong>contrae</strong> el Navegador (se van el panel y la cuadrícula) y deja solo la barra. <strong>No cierra</strong> el formulario ni la aplicación; para cerrarla usa la X de la ventana.</p>
+    </div>
+  </div>
+
+  <!-- 6.9 -->
+  <h3>6.9 Ayuda</h3>
+  <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb hot">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+  <ol class="steps">
+    <li>Pulsa <strong>Ayuda</strong>. Se abre en otra ventana la ayuda HTML de Windows (<code>Navegador.chm</code>) con el manual del componente.</li>
+    <li>Ese archivo viene <strong>dentro de la DLL</strong> del Navegador; no hay que configurar ninguna ruta. Ciérralo con la X.</li>
+  </ol>
+
+  <!-- 6.10 -->
+  <h3>6.10 Imprimir</h3>
+  <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb hot">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+  <div class="grid2">
+    <div>
+      <div class="win"><div class="win-title">Imprimir</div><div class="win-body">
+        <p>ℹ La impresión de reportes está pendiente de integración con el componente Reporteador.</p>
+        <p><span class="btn-mock">OK</span></p>
+      </div></div>
+    </div>
+    <div>
+      <div class="nota info"><strong>Qué decir si te piden imprimir</strong><p>"El botón está conectado y respeta el permiso <em>derImprimir</em> del rol, pero el reporte lo genera el componente <strong>Reporteador</strong>, que todavía no está integrado. Por eso avisa en lugar de fallar."</p></div>
+    </div>
+  </div>
+
+  <div class="nota ok"><strong>Guion de 60 segundos para el catedrático</strong>
+    <p>1. "No programé ningún CRUD. Puse el control <strong>Navegador</strong> en el formulario y lo configuré con <code>NavegadorMetConfigurar("tblproducto", 2, 16)</code>: la tabla, el módulo Inventario y la aplicación Productos de Seguridad." <em>(Di tu número real de aplicación si no es 16.)</em></p>
+    <p>2. [Refrescar e Ingresar] "Lee la estructura de la tabla en MySQL y arma el formulario solo. La PK la dejo vacía y MySQL la numera, la FK idCategoria sale como combo con el nombre de la categoría, la fecha trae calendario e is_active es una casilla."</p>
+    <p>3. [Guardar vacío] "Las validaciones también vienen del tipo de dato: obligatorio, decimal, largo máximo."</p>
+    <p>4. [Guardar, Modificar, Consultar, Eliminar] "Siempre pide confirmación. Al modificar, la PK queda bloqueada. Consultar usa el componente Consultas para filtrar."</p>
+    <p>5. "Los botones siguen los permisos del <strong>rol</strong> en Seguridad: el Administrador tiene todo y el Supervisor ve Eliminar e Imprimir en gris. Cada cambio se guarda en la <strong>bitácora</strong> con el usuario, dentro de la misma transacción."</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+
+<section id="paso7" class="paso">
+  <header class="paso-head"><span class="num">7</span><div><h2>Usuario con permisos limitados</h2><p class="meta">⏱ 7 min · 📍 App + MySQL Workbench</p></div></header>
+
+  <h3>7.1 Entrar como Supervisor</h3>
+  <ol class="steps">
+    <li><strong>Cierra la app</strong> con la X de la ventana.</li>
+    <li>En Visual Studio, pulsa <kbd>F5</kbd>.</li>
+    <li>Inicia sesión con <strong>cramirez</strong> / <strong>admin2</strong>. Si sale "Usuario o contraseña incorrectos", prueba con <strong>admin3</strong>.</li>
+    <li>Se abre Form1. Pulsa <strong>Refrescar</strong>.</li>
+    <li>Deberías ver <strong>Eliminar e Imprimir en gris</strong> (no se pueden pulsar). Ingresar y Modificar siguen funcionando.</li>
+  </ol>
+  <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb off">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb off">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+  <figure class="shot"><img src="img/05_crud_cuadricula.png" alt="Navegador con Eliminar e Imprimir en gris y la cuadrícula cargada" loading="lazy"><figcaption>Así se ve con un usuario que no tiene permiso para Eliminar ni Imprimir: esos dos botones en gris y el resto activos. <em>(Captura del manual con tblempleado; tú verás tblproducto.)</em></figcaption></figure>
+
+  <h3>7.2 Matriz de permisos (aplicación Productos)</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Usuario</th><th>Rol</th><th>Ingresar</th><th>Modificar</th><th>Eliminar</th><th>Imprimir</th><th>Los otros 10</th></tr></thead>
+    <tbody>
+      <tr><td>imelendez</td><td>1 Administrador</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td></tr>
+      <tr><td>cramirez</td><td>2 Supervisor</td><td>✔</td><td>✔</td><td>✘ gris</td><td>✘ gris</td><td>✔</td></tr>
+      <tr><td>mlopez</td><td>2 Supervisor</td><td>✔</td><td>✔</td><td>✘ gris</td><td>✘ gris</td><td>✔</td></tr>
+      <tr><td>UsuarioExamen</td><td>12 PerfilExamen</td><td>✔</td><td>✔</td><td>✘ gris</td><td>✘ gris</td><td>✔</td></tr>
+      <tr><td>Rol sin fila para Productos</td><td>—</td><td>✘ gris</td><td>✘ gris</td><td>✘ gris</td><td>✘ gris</td><td>✔</td></tr>
+    </tbody>
+  </table></div>
+  <p>Los permisos solo afectan a <strong>4 botones</strong>: Ingresar (derInsertar), Modificar (derEditar), Eliminar (derEliminar) e Imprimir (derImprimir). Los otros 10 (Consultar, Refrescar, los de navegación, etc.) están siempre activos porque no cambian datos.</p>
+  <div class="nota info"><strong>Si el catedrático te da UsuarioExamen</strong><p>Ya tiene Ingresar y Modificar en Productos por su rol 12 (PerfilExamen), que registraste en el paso 2. La contraseña te la da él.</p></div>
+
+  <h3>7.3 Cómo se decide si un botón se activa</h3>
+  <svg viewBox="0 0 800 330" width="100%" role="img" aria-label="Flujo de permisos. El usuario en sesión tiene roles en tblusuariorol. Cada rol tiene una fila de permisos en tblrolmoduloaplicacion para el módulo y la aplicación. Se combinan los roles: basta que uno lo permita. Con 1 el botón queda activo y con 0 en gris. Los permisos por usuario de tblusuariomoduloaplicacion se ignoran. Todo se evalúa una vez al abrir el formulario.">
+    <defs><marker id="flecha2b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+    <rect x="10" y="20" width="170" height="84" rx="8" class="d-box"/>
+    <text x="95" y="48" text-anchor="middle" class="d-text" font-size="15">Usuario en sesión</text>
+    <text x="95" y="70" text-anchor="middle" class="d-text-sm" font-size="13">(hizo login)</text>
+    <text x="95" y="90" text-anchor="middle" class="d-text-sm" font-size="13">ej. cramirez</text>
+
+    <rect x="215" y="20" width="175" height="84" rx="8" class="d-box"/>
+    <text x="302" y="48" text-anchor="middle" class="d-text" font-size="15">Sus roles</text>
+    <text x="302" y="70" text-anchor="middle" class="d-text-sm" font-size="13">tblusuariorol</text>
+    <text x="302" y="90" text-anchor="middle" class="d-text-sm" font-size="13">cramirez → rol 2</text>
+
+    <rect x="425" y="20" width="180" height="84" rx="8" class="d-box"/>
+    <text x="515" y="48" text-anchor="middle" class="d-text" font-size="15">Permisos del rol</text>
+    <text x="515" y="70" text-anchor="middle" class="d-text-sm" font-size="13">tblrolmoduloaplicacion</text>
+    <text x="515" y="90" text-anchor="middle" class="d-text-sm" font-size="13">módulo 2 + Productos</text>
+
+    <rect x="640" y="20" width="150" height="84" rx="8" class="d-accent"/>
+    <text x="715" y="48" text-anchor="middle" class="d-text" font-size="15">Combina roles</text>
+    <text x="715" y="70" text-anchor="middle" class="d-text-sm" font-size="13">basta que UNO</text>
+    <text x="715" y="90" text-anchor="middle" class="d-text-sm" font-size="13">lo permita</text>
+
+    <line x1="182" y1="62" x2="212" y2="62" class="d-line" marker-end="url(#flecha2b)"/>
+    <line x1="392" y1="62" x2="422" y2="62" class="d-line" marker-end="url(#flecha2b)"/>
+    <line x1="607" y1="62" x2="637" y2="62" class="d-line" marker-end="url(#flecha2b)"/>
+
+    <line x1="700" y1="106" x2="560" y2="156" class="d-line" marker-end="url(#flecha2b)"/>
+    <line x1="730" y1="106" x2="715" y2="156" class="d-line" marker-end="url(#flecha2b)"/>
+    <rect x="470" y="160" width="150" height="50" rx="8" class="d-ok"/>
+    <text x="545" y="190" text-anchor="middle" class="d-text" font-size="15">1 → activo</text>
+    <rect x="640" y="160" width="150" height="50" rx="8" class="d-bad"/>
+    <text x="715" y="190" text-anchor="middle" class="d-text" font-size="15">0 → en gris</text>
+
+    <text x="375" y="172" text-anchor="middle" class="d-text-sm" font-size="13">Solo 4 botones usan esto:</text>
+    <text x="375" y="192" text-anchor="middle" class="d-text-sm" font-size="13">Ingresar · Modificar</text>
+    <text x="375" y="212" text-anchor="middle" class="d-text-sm" font-size="13">Eliminar · Imprimir</text>
+
+    <line x1="95" y1="106" x2="95" y2="146" class="d-line" marker-end="url(#flecha2b)"/>
+    <text x="105" y="132" class="d-text-sm" font-size="13">✘ no se usa</text>
+    <rect x="10" y="150" width="260" height="72" rx="8" class="d-bad"/>
+    <text x="140" y="174" text-anchor="middle" class="d-text" font-size="15">Permisos por USUARIO</text>
+    <text x="140" y="194" text-anchor="middle" class="d-text-sm" font-size="13">tblusuariomoduloaplicacion</text>
+    <text x="140" y="212" text-anchor="middle" class="d-text-sm" font-size="13">el Navegador NO los lee</text>
+
+    <rect x="10" y="248" width="780" height="64" rx="8" class="d-accent"/>
+    <text x="400" y="274" text-anchor="middle" class="d-text" font-size="15">Se evalúa UNA sola vez: al abrir el formulario (OnLoad)</text>
+    <text x="400" y="298" text-anchor="middle" class="d-text-sm" font-size="13">Si cambias permisos en MySQL → cierra la app y vuelve a entrar para verlo</text>
+  </svg>
+  <figure class="shot"><img src="img/22_permisos_botones.png" alt="Código NavegadorMetAplicarSeguridad con el mapa de botones y permisos" loading="lazy"><figcaption>El código que une cada botón con su permiso: Ingresar → Insertar, Modificar → Editar, Eliminar → Eliminar, Imprimir → Imprimir. Se ejecuta en OnLoad. <em>(Captura del manual: código del componente Navegador.)</em></figcaption></figure>
+
+  <h3>7.4 Demostración "cambio en vivo"</h3>
+  <p>Así demuestras que los permisos salen de la base de datos y no del código. Primero mira cómo están:</p>
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench</span><button class="copy" type="button">Copiar</button></div><pre><code>USE dbsistemaembutidos;
+SELECT * FROM tblrolmoduloaplicacion
+WHERE idAplicacion = (SELECT idAplicacion FROM tblaplicacion WHERE nombreAplicacion = 'Productos');</code></pre></div>
+  <ol class="steps">
+    <li>Con cramirez, enseña que <strong>Eliminar está en gris</strong>.</li>
+    <li>En Workbench, ejecuta esto para darle Eliminar al rol 2 (Supervisor):</li>
+  </ol>
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench</span><button class="copy" type="button">Copiar</button></div><pre><code>SET SQL_SAFE_UPDATES = 0;
+UPDATE tblrolmoduloaplicacion
+SET derEliminarRolModuloAplicacion = 1
+WHERE idRol = 2
+  AND idAplicacion = (SELECT idAplicacion FROM tblaplicacion WHERE nombreAplicacion = 'Productos');</code></pre></div>
+  <ol class="steps">
+    <li><strong>Cierra la app</strong>. El botón no cambia solo, porque los permisos se leen <strong>al abrir el formulario</strong>.</li>
+    <li>Pulsa <kbd>F5</kbd>, entra con cramirez y pulsa Refrescar: <strong>Eliminar ya está activo</strong>.</li>
+    <li>Después, déjalo como estaba y vuelve a reiniciar la app:</li>
+  </ol>
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench</span><button class="copy" type="button">Copiar</button></div><pre><code>SET SQL_SAFE_UPDATES = 0;
+UPDATE tblrolmoduloaplicacion
+SET derEliminarRolModuloAplicacion = 0
+WHERE idRol = 2
+  AND idAplicacion = (SELECT idAplicacion FROM tblaplicacion WHERE nombreAplicacion = 'Productos');</code></pre></div>
+  <div class="nota warn"><strong>Ojo: el rol 2 lo comparten cramirez y mlopez</strong><p>El cambio afecta a <strong>todos</strong> los usuarios con ese rol, porque el permiso es del rol y no de la persona.</p></div>
+
+  <div class="nota danger"><strong>Trampa: permisos por USUARIO</strong><p>Si te piden dar permisos en la pantalla <strong>"Asignación Aplicación Usuario"</strong> (tabla <code>tblusuariomoduloaplicacion</code>), ten en cuenta que <strong>el Navegador no los lee</strong> y los botones no cambian. Hay que darlos al <strong>ROL</strong>: en <code>tblrolmoduloaplicacion</code> (SQL de arriba) o en la pantalla <strong>"Asignación Aplicación Perfiles"</strong> de Seguridad. Explícalo así: "El componente solo aplica permisos por rol; los de usuario son una mejora pendiente".</p></div>
+</section>
+
+<!-- ===================================================================== -->
+
+<section id="paso8" class="paso">
+  <header class="paso-head"><span class="num">8</span><div><h2>Mostrar la bitácora</h2><p class="meta">⏱ 3 min · 📍 MySQL Workbench</p></div></header>
+
+  <p>Cada vez que el Navegador guarda, modifica o elimina algo, deja una fila en <code>tblbitacora</code> con el usuario de la sesión. El login también deja la suya (<code>LOGIN</code>). Ejecuta esta consulta (pon el cursor dentro y pulsa <kbd>Ctrl</kbd>+<kbd>Enter</kbd>):</p>
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench</span><button class="copy" type="button">Copiar</button></div><pre><code>SELECT b.idBitacora, u.nombreUsuario, b.accionBitacora, b.tablaBitacora,
+       b.idRegistroBitacora, b.detallesBitacora, b.fechaHoraBitacora
+FROM tblbitacora b
+LEFT JOIN tblusuario u ON u.idUsuario = b.idUsuario
+ORDER BY b.idBitacora DESC
+LIMIT 15;</code></pre></div>
+
+  <p><strong>Qué debes ver</strong> (tus números y horas serán otros; lo más reciente sale arriba):</p>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>idBitacora</th><th>nombreUsuario</th><th>accionBitacora</th><th>tablaBitacora</th><th>idRegistroBitacora</th><th>detallesBitacora</th><th>fechaHoraBitacora</th></tr></thead>
+    <tbody>
+      <tr><td>…315</td><td>cramirez</td><td>LOGIN</td><td>tblUsuario</td><td>(id de cramirez)</td><td>Inicio de sesión exitoso del usuario: cramirez</td><td>2026-09-29 01:32</td></tr>
+      <tr><td>…314</td><td>imelendez</td><td>DELETE</td><td>tblproducto</td><td>4</td><td>Se eliminó un registro de tblproducto.</td><td>2026-09-29 01:27</td></tr>
+      <tr><td>…313</td><td>imelendez</td><td>UPDATE</td><td>tblproducto</td><td>1</td><td>Se actualizó un registro en tblproducto: idCategoria: 1 nombreProducto: Chorizo parrillero precioProducto: 27.00 …</td><td>2026-09-29 01:24</td></tr>
+      <tr><td>…312</td><td>imelendez</td><td>INSERT</td><td>tblproducto</td><td>0</td><td>Se insertó un registro en tblproducto: idCategoria: 3 nombreProducto: Salchicha Viena …</td><td>2026-09-29 01:21</td></tr>
+      <tr><td>…311</td><td>imelendez</td><td>INSERT</td><td>tblproducto</td><td>0</td><td>Se insertó un registro en tblproducto: idCategoria: 1 nombreProducto: Chorizo parrillero …</td><td>2026-09-29 01:19</td></tr>
+      <tr><td>…310</td><td>imelendez</td><td>LOGIN</td><td>tblUsuario</td><td>(id de imelendez)</td><td>Inicio de sesión exitoso del usuario: imelendez</td><td>2026-09-29 01:15</td></tr>
+    </tbody>
+  </table></div>
+  <div class="nota info"><strong>¿Por qué el INSERT tiene idRegistroBitacora = 0?</strong><p>Porque idProducto es AUTO_INCREMENT: el número lo genera MySQL y el Navegador no lo tiene en el momento de escribir la bitácora, así que pone 0. En UPDATE y DELETE sí sale el id real, porque el registro ya existía.</p></div>
+
+  <h3>La bitácora va en la MISMA transacción</h3>
+  <svg viewBox="0 0 800 230" width="100%" role="img" aria-label="Transacción: 1 se abre la transacción, 2 se hace el cambio en tblproducto, 3 se escribe la fila en tblbitacora, 4 COMMIT guarda los dos. Si falla el paso 2 o el 3 se hace ROLLBACK y no queda ni el cambio ni la bitácora.">
+    <defs><marker id="flecha2c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+    <rect x="10" y="20" width="160" height="70" rx="8" class="d-box"/>
+    <text x="90" y="50" text-anchor="middle" class="d-text" font-size="15">1. Abre</text>
+    <text x="90" y="72" text-anchor="middle" class="d-text-sm" font-size="13">transacción</text>
+    <rect x="205" y="20" width="185" height="70" rx="8" class="d-box"/>
+    <text x="297" y="50" text-anchor="middle" class="d-text" font-size="15">2. Cambio en</text>
+    <text x="297" y="72" text-anchor="middle" class="d-text-sm" font-size="13">tblproducto</text>
+    <rect x="425" y="20" width="165" height="70" rx="8" class="d-box"/>
+    <text x="507" y="50" text-anchor="middle" class="d-text" font-size="15">3. Fila en</text>
+    <text x="507" y="72" text-anchor="middle" class="d-text-sm" font-size="13">tblbitacora</text>
+    <rect x="625" y="20" width="165" height="70" rx="8" class="d-ok"/>
+    <text x="707" y="50" text-anchor="middle" class="d-text" font-size="15">4. COMMIT</text>
+    <text x="707" y="72" text-anchor="middle" class="d-text-sm" font-size="13">se guardan los 2</text>
+    <line x1="172" y1="55" x2="202" y2="55" class="d-line" marker-end="url(#flecha2c)"/>
+    <line x1="392" y1="55" x2="422" y2="55" class="d-line" marker-end="url(#flecha2c)"/>
+    <line x1="592" y1="55" x2="622" y2="55" class="d-line" marker-end="url(#flecha2c)"/>
+    <line x1="297" y1="92" x2="340" y2="146" class="d-line" marker-end="url(#flecha2c)"/>
+    <line x1="507" y1="92" x2="460" y2="146" class="d-line" marker-end="url(#flecha2c)"/>
+    <text x="305" y="128" text-anchor="end" class="d-text-sm" font-size="13">falla</text>
+    <text x="500" y="128" class="d-text-sm" font-size="13">falla</text>
+    <rect x="230" y="150" width="340" height="64" rx="8" class="d-bad"/>
+    <text x="400" y="177" text-anchor="middle" class="d-text" font-size="15">ROLLBACK</text>
+    <text x="400" y="200" text-anchor="middle" class="d-text-sm" font-size="13">no queda ni el cambio ni la bitácora</text>
+  </svg>
+  <p>El cambio y su fila de bitácora se guardan juntos o no se guarda ninguno. Si falla cualquiera de los dos (por ejemplo, la bitácora), se hace <strong>rollback</strong> y el producto <strong>no se guarda</strong>. Así nunca hay un cambio sin auditar ni una auditoría de algo que no pasó. Es la <em>atomicidad</em> de ACID.</p>
+</section>
+
+<!-- ===================================================================== -->
+
+<section id="extra1" class="paso">
+  <header class="paso-head"><span class="num extra">+</span><div><h2>Extra: dos tablas en el mismo formulario (y demostrar la FK)</h2><p class="meta">⏱ 6 min · 📍 Visual Studio</p></div></header>
+
+  <p>Con dos botones puedes cambiar la tabla del <strong>mismo</strong> Navegador entre productos y categorías, usando <code>NavegadorMetCambiarTabla</code>.</p>
+
+  <svg viewBox="0 0 800 300" width="100%" role="img" aria-label="Distribución de Form1: los botones Productos y Categorías arriba, en Y 8; el Navegador debajo, en Location 0, 45; y debajo la zona donde el Navegador se despliega hacia abajo y tapa lo que haya ahí.">
+    <defs><marker id="flecha2d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+    <rect x="10" y="10" width="780" height="280" rx="8" class="d-box"/>
+    <text x="30" y="34" class="d-text" font-size="15">Form1 (Diseñador)</text>
+    <line x1="10" y1="44" x2="790" y2="44" class="d-line"/>
+    <rect x="30" y="54" width="120" height="32" rx="4" class="d-accent"/>
+    <text x="90" y="75" text-anchor="middle" class="d-text" font-size="15">Productos</text>
+    <rect x="165" y="54" width="130" height="32" rx="4" class="d-accent"/>
+    <text x="230" y="75" text-anchor="middle" class="d-text" font-size="15">Categorías</text>
+    <text x="312" y="75" class="d-text-sm" font-size="13">← botones ARRIBA (Y ≈ 8)</text>
+    <rect x="20" y="96" width="760" height="40" rx="4" class="d-box"/>
+    <text x="400" y="121" text-anchor="middle" class="d-text" font-size="15">navegador2 · Location (0, 45) · barra de 14 botones</text>
+    <rect x="20" y="146" width="760" height="130" rx="4" class="d-bad"/>
+    <line x1="50" y1="140" x2="50" y2="262" class="d-line" marker-end="url(#flecha2d)"/>
+    <text x="410" y="196" text-anchor="middle" class="d-text" font-size="15">Aquí se despliega el Navegador: crece hacia ABAJO y se pone al frente</text>
+    <text x="410" y="224" text-anchor="middle" class="d-text-sm" font-size="13">Un botón puesto aquí queda TAPADO por el panel y la cuadrícula</text>
+  </svg>
+
+  <h3>Paso a paso en el Diseñador</h3>
+  <ol class="steps">
+    <li>En el Explorador de soluciones, haz doble clic en <strong>Form1.cs</strong> para abrir el Diseñador.</li>
+    <li>Haz clic en el Navegador (<strong>navegador2</strong>), pulsa <kbd>F4</kbd> para ver Propiedades y pon <strong>Location = 0, 45</strong>.</li>
+    <li>Abre el Cuadro de herramientas (<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>X</kbd>) y arrastra un <strong>Button</strong> a la esquina superior izquierda. En Propiedades pon <strong>(Name) = BtnProductos</strong>, <strong>Text = Productos</strong> y <strong>Location = 10, 8</strong>.</li>
+    <li>Arrastra otro <strong>Button</strong> a su lado con <strong>(Name) = BtnCategorias</strong>, <strong>Text = Categorías</strong> y <strong>Location = 100, 8</strong>.</li>
+    <li>Haz <strong>doble clic en BtnProductos</strong>: Visual Studio crea el método <code>BtnProductos_Click</code> vacío en Form1.cs. Haz lo mismo con BtnCategorias.</li>
+    <li>Escribe dentro de cada método la línea correspondiente para que quede así:</li>
+  </ol>
+  <div class="code"><div class="code-bar"><span>C# · Form1.cs (dentro de la clase Form1, debajo del constructor)</span><button class="copy" type="button">Copiar</button></div><pre><code>private void BtnProductos_Click(object sender, EventArgs e)
+{
+    navegador2.NavegadorMetCambiarTabla("tblproducto");
+}
+
+private void BtnCategorias_Click(object sender, EventArgs e)
+{
+    navegador2.NavegadorMetCambiarTabla("tblcategoriaproducto");
+}</code></pre></div>
+  <div class="nota warn"><strong>Crea los métodos con doble clic</strong><p>Si pegas los métodos sin haber hecho doble clic en los botones, el evento Click no queda enlazado y el botón no hace nada. Si ya existe un <code>BtnProductos_Click</code> vacío, no lo pegues otra vez (daría error de método duplicado): escribe solo la línea de adentro.</p></div>
+  <div class="nota info"><strong>Usa los mismos permisos</strong><p><code>NavegadorMetCambiarTabla</code> solo cambia la tabla y la vuelve a consultar. El módulo y la aplicación siguen siendo los del constructor (2 y Productos), así que con categorías se aplican <strong>los mismos permisos</strong> que con productos.</p></div>
+
+  <h3>Demostrar la llave foránea</h3>
+  <ol class="steps">
+    <li><kbd>F5</kbd>, entra con imelendez y pulsa <strong>Categorías</strong>. La cuadrícula enseña <code>tblcategoriaproducto</code> (idCategoria, nombreCategoria).</li>
+    <li>Selecciona <strong>Chorizos</strong>, que ya la usa "Chorizo parrillero", y pulsa <strong>Eliminar</strong> → <strong>Yes</strong>.</li>
+    <li>Sale <strong>"Error al eliminar"</strong> y la categoría <strong>no se borra</strong>. Es la integridad referencial funcionando.</li>
+    <li>Ahora pulsa <strong>Ingresar</strong>, escribe nombreCategoria = <code>Longanizas</code> y dale a <strong>Guardar</strong> → <strong>Yes</strong>.</li>
+    <li>Pulsa <strong>Productos</strong> → <strong>Ingresar</strong> y abre el combo <strong>idCategoria</strong>: ya aparece <strong>Longanizas</strong>.</li>
+  </ol>
+  <div class="grid2">
+    <div>
+      <div class="win"><div class="win-title">Error al eliminar</div><div class="win-body">
+        <p>⛔ El registro no puede guardarse o eliminarse porque existe una relación de llave foránea.</p>
+        <p><span class="btn-mock">OK</span></p>
+      </div></div>
+    </div>
+    <div>
+      <div class="win"><div class="win-title">Nuevo registro - tblproducto</div><div class="win-body">
+        <div class="field"><label>idProducto [PK]</label><span class="input"></span></div>
+        <div class="field"><label>idCategoria</label><span class="input combo">Longanizas ▾</span></div>
+        <p>Opciones del combo: Chorizos · Jamones · Salchichas · <strong>Longanizas</strong></p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+
+<section id="extra2" class="paso">
+  <header class="paso-head"><span class="num extra">+</span><div><h2>Si te piden OTRA tabla</h2><p class="meta">📍 Receta general</p></div></header>
+  <div class="nota info"><strong>¿En qué módulo la registro?</strong><p>Elige el área de la empresa a la que pertenece la tabla: clientes y pedidos → <strong>3 Ventas</strong>; productos y materia prima → <strong>2 Inventario</strong>; lotes y recetas → <strong>1 Producción</strong>. Si te nombran un módulo que no existe (Bancos, RRHH, Contabilidad…), créalo primero en <code>tblmodulo</code>: está explicado en <a href="#modulos">¿Qué es el IdModulo?</a>.</p></div>
+
+
+  <svg viewBox="0 0 800 135" width="100%" role="img" aria-label="Receta en 5 pasos: 1 crear la tabla con PK y FK en MySQL; 2 registrar la aplicación o reutilizar una existente; 3 dar permisos por rol; 4 configurar Form1.cs con NavegadorMetConfigurar en Visual Studio; 5 probar con F5 y login.">
+    <defs><marker id="flecha2e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+    <rect x="10" y="20" width="130" height="70" rx="8" class="d-box"/>
+    <text x="75" y="50" text-anchor="middle" class="d-text" font-size="15">1. Tabla</text>
+    <text x="75" y="72" text-anchor="middle" class="d-text-sm" font-size="13">PK + FK reales</text>
+    <rect x="172" y="20" width="130" height="70" rx="8" class="d-box"/>
+    <text x="237" y="50" text-anchor="middle" class="d-text" font-size="15">2. Aplicación</text>
+    <text x="237" y="72" text-anchor="middle" class="d-text-sm" font-size="13">nueva o existente</text>
+    <rect x="334" y="20" width="130" height="70" rx="8" class="d-box"/>
+    <text x="399" y="50" text-anchor="middle" class="d-text" font-size="15">3. Permisos</text>
+    <text x="399" y="72" text-anchor="middle" class="d-text-sm" font-size="13">por ROL</text>
+    <rect x="496" y="20" width="130" height="70" rx="8" class="d-accent"/>
+    <text x="561" y="50" text-anchor="middle" class="d-text" font-size="15">4. Form1.cs</text>
+    <text x="561" y="72" text-anchor="middle" class="d-text-sm" font-size="13">MetConfigurar</text>
+    <rect x="658" y="20" width="130" height="70" rx="8" class="d-ok"/>
+    <text x="723" y="50" text-anchor="middle" class="d-text" font-size="15">5. Probar</text>
+    <text x="723" y="72" text-anchor="middle" class="d-text-sm" font-size="13">F5 + login</text>
+    <line x1="142" y1="55" x2="169" y2="55" class="d-line" marker-end="url(#flecha2e)"/>
+    <line x1="304" y1="55" x2="331" y2="55" class="d-line" marker-end="url(#flecha2e)"/>
+    <line x1="466" y1="55" x2="493" y2="55" class="d-line" marker-end="url(#flecha2e)"/>
+    <line x1="628" y1="55" x2="655" y2="55" class="d-line" marker-end="url(#flecha2e)"/>
+    <text x="75" y="116" text-anchor="middle" class="d-muted" font-size="13">Workbench</text>
+    <text x="237" y="116" text-anchor="middle" class="d-muted" font-size="13">Workbench</text>
+    <text x="399" y="116" text-anchor="middle" class="d-muted" font-size="13">Workbench</text>
+    <text x="561" y="116" text-anchor="middle" class="d-muted" font-size="13">Visual Studio</text>
+    <text x="723" y="116" text-anchor="middle" class="d-muted" font-size="13">La app</text>
+  </svg>
+
+  <ol class="steps">
+    <li><strong>Crea la tabla</strong> en <code>dbsistemaembutidos</code>, con PK y, si depende de otra tabla, una FK con <code>CONSTRAINT</code> de verdad.</li>
+    <li><strong>Registra la aplicación</strong> en <code>tblaplicacion</code> o <strong>reutiliza una</strong> que ya exista y no tenga permisos. Anota su <code>idAplicacion</code>.</li>
+    <li><strong>Da permisos por ROL</strong> en <code>tblrolmoduloaplicacion</code>: el 1 con todo y el 2 y el 12 con lo que te pidan.</li>
+    <li>En Form1.cs pon <code>navegador2.NavegadorMetConfigurar("tabla", módulo, aplicación);</code>.</li>
+    <li><strong>Compila y prueba</strong>: <kbd>F5</kbd>, login, Refrescar e Ingresar.</li>
+  </ol>
+
+  <h3>Reglas para diseñar la tabla</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Regla</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr><td><strong>PK obligatoria</strong>, mejor <code>INT AUTO_INCREMENT</code></td><td>Sin PK no puede identificar la fila para modificar o eliminar (aparece "Definir llave primaria"). Con AUTO_INCREMENT puedes dejar la PK vacía al ingresar; sin él hay que escribirla a mano y cuidar que no se repita.</td></tr>
+      <tr><td><strong>FK con CONSTRAINT real</strong> (<code>FOREIGN KEY … REFERENCES</code>)</td><td>El Navegador detecta la relación leyendo el esquema. Sin constraint sale un TextBox en vez del combo y la integridad no queda protegida.</td></tr>
+      <tr><td>En la tabla padre, una columna de texto que contenga <em>nombre</em>, <em>descripcion</em>, <em>titulo</em>, <em>usuario</em> o <em>codigo</em></td><td>Es la que el combo enseña (nombreCategoria, nombreCliente…).</td></tr>
+      <tr><td><strong>NOT NULL</strong> solo en lo que el usuario puede escribir</td><td>Todo NOT NULL pasa a ser obligatorio en el formulario.</td></tr>
+      <tr><td>Tipos simples: INT, VARCHAR, DECIMAL, DATE, TINYINT(1)</td><td>Cada uno tiene su control y su validación. Tipos raros (ENUM, JSON, BLOB…) salen como TextBox y casi no se validan.</td></tr>
+      <tr><td>Nombres sin espacios ni tildes (<code>tblpedido</code>, <code>fechaPedido</code>)</td><td>El nombre de la tabla va tal cual en el SQL (<code>SELECT * FROM</code> + tabla).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Ejemplo completo: Ventas (reutilizando la aplicación 3 "Gestión de Pedidos")</h3>
+  <p>La aplicación 3 "Gestión de Pedidos" (módulo 3 Ventas) <strong>ya existe</strong> y no tiene tabla ni permisos. Antes de insertar, compruébalo:</p>
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench (verificar)</span><button class="copy" type="button">Copiar</button></div><pre><code>USE dbsistemaembutidos;
+SELECT * FROM tblaplicacion WHERE idAplicacion = 3;          -- debe decir Gestión de Pedidos, idModulo 3
+SELECT * FROM tblrolmoduloaplicacion WHERE idAplicacion = 3; -- debe salir vacío</code></pre></div>
+  <p>Luego ejecuta todo junto (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd>):</p>
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench</span><button class="copy" type="button">Copiar</button></div><pre><code>USE dbsistemaembutidos;
+
+CREATE TABLE tblcliente (
+  idCliente INT AUTO_INCREMENT PRIMARY KEY,
+  nitCliente VARCHAR(15) NOT NULL,
+  nombreCliente VARCHAR(100) NOT NULL,
+  telefonoCliente VARCHAR(20) NOT NULL,
+  correoCliente VARCHAR(100)
+);
+
+CREATE TABLE tblpedido (
+  idPedido INT AUTO_INCREMENT PRIMARY KEY,
+  idCliente INT NOT NULL,
+  fechaPedido DATE NOT NULL,
+  totalPedido DECIMAL(10,2) NOT NULL,
+  entregado TINYINT(1) NOT NULL DEFAULT 0,
+  CONSTRAINT fk_pedido_cliente FOREIGN KEY (idCliente)
+    REFERENCES tblcliente(idCliente)
+);
+
+INSERT INTO tblrolmoduloaplicacion
+  (idRol, idModulo, idAplicacion,
+   derInsertarRolModuloAplicacion, derEditarRolModuloAplicacion,
+   derEliminarRolModuloAplicacion, derImprimirRolModuloAplicacion)
+VALUES
+  (1,  3, 3, 1, 1, 1, 1),
+  (2,  3, 3, 1, 1, 0, 0),
+  (12, 3, 3, 1, 1, 0, 0);</code></pre></div>
+  <p>En Form1.cs, cambia la línea del constructor. Los botones son opcionales y van <strong>arriba</strong> del Navegador, igual que en el Extra anterior:</p>
+  <div class="code"><div class="code-bar"><span>C# · Form1.cs</span><button class="copy" type="button">Copiar</button></div><pre><code>// En el constructor, después de InitializeComponent():
+navegador2.NavegadorMetConfigurar("tblpedido", 3, 3);
+
+// Opcional: dos botones arriba del Navegador (créalos con doble clic)
+private void BtnPedidos_Click(object sender, EventArgs e)
+{
+    navegador2.NavegadorMetCambiarTabla("tblpedido");
+}
+
+private void BtnClientes_Click(object sender, EventArgs e)
+{
+    navegador2.NavegadorMetCambiarTabla("tblcliente");
+}</code></pre></div>
+  <div class="nota warn"><strong>Primero ingresa clientes</strong><p>El combo idCliente de los pedidos sale de tblcliente y enseña <em>nombreCliente</em>. Si no hay clientes, el combo sale vacío y no podrás guardar pedidos. Ingresa 2 o 3 clientes (con el botón Clientes o con un INSERT) antes de probar los pedidos.</p></div>
+
+  <h3>Plantilla genérica (cambia los marcadores)</h3>
+  <div class="code"><div class="code-bar"><span>SQL · Plantilla (tblX, idX, M = módulo, A = aplicación)</span><button class="copy" type="button">Copiar</button></div><pre><code>USE dbsistemaembutidos;
+
+-- 1) Tabla padre (catálogo): lo que enseñará el combo
+CREATE TABLE tblPadre (
+  idPadre INT AUTO_INCREMENT PRIMARY KEY,
+  nombrePadre VARCHAR(60) NOT NULL          -- con "nombre" en el nombre: el combo la usa
+);
+INSERT INTO tblPadre (nombrePadre) VALUES ('Opción 1'), ('Opción 2');
+
+-- 2) Tabla principal del CRUD
+CREATE TABLE tblX (
+  idX INT AUTO_INCREMENT PRIMARY KEY,       -- PK autoincremental: al ingresar déjala vacía
+  idPadre INT NOT NULL,                     -- FK: sale como combo
+  nombreX VARCHAR(100) NOT NULL,            -- TextBox obligatorio, máx. 100
+  montoX DECIMAL(10,2) NOT NULL,            -- TextBox decimal
+  fechaX DATE NOT NULL,                     -- DateTimePicker
+  is_active TINYINT(1) NOT NULL DEFAULT 1,  -- CheckBox
+  CONSTRAINT fk_x_padre FOREIGN KEY (idPadre) REFERENCES tblPadre(idPadre)
+);
+
+-- 3a) Aplicación NUEVA en el módulo M (1 Producción, 2 Inventario, 3 Ventas, 4 Seguridad)
+INSERT INTO tblaplicacion (idModulo, nombreAplicacion, descripcionAplicacion)
+VALUES (M, 'Nombre de la app', 'CRUD de tblX con el Navegador');
+SELECT idAplicacion FROM tblaplicacion WHERE nombreAplicacion = 'Nombre de la app';  -- ese número es A
+
+-- 3b) ...o REUTILIZA una aplicación existente sin permisos (A = su idAplicacion)
+
+-- 4) Permisos por ROL
+INSERT INTO tblrolmoduloaplicacion
+  (idRol, idModulo, idAplicacion,
+   derInsertarRolModuloAplicacion, derEditarRolModuloAplicacion,
+   derEliminarRolModuloAplicacion, derImprimirRolModuloAplicacion)
+VALUES
+  (1,  M, A, 1, 1, 1, 1),   -- Administrador: todo
+  (2,  M, A, 1, 1, 0, 0),   -- Supervisor: Ingresar + Modificar
+  (12, M, A, 1, 1, 0, 0);   -- PerfilExamen: Ingresar + Modificar</code></pre></div>
+  <div class="code"><div class="code-bar"><span>C# · Form1.cs (constructor)</span><button class="copy" type="button">Copiar</button></div><pre><code>navegador2.NavegadorMetConfigurar("tblX", M, A);   // ej.: ("tblpedido", 3, 3)</code></pre></div>
+</section>
+
+<!-- ===================================================================== -->
+
+<section id="errores" class="paso">
+  <header class="paso-head"><span class="num ref">!</span><div><h2>Problemas comunes (síntoma → causa → solución)</h2><p class="meta">📍 Consulta rápida cuando algo falla</p></div></header>
+
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Síntoma</th><th>Causa</th><th>Solución</th></tr></thead>
+    <tbody>
+      <tr><td><em>"Data source name not found and no default driver specified"</em></td><td>El DSN <strong>EmbutidosS.A</strong> no existe, se llama distinto o se creó con el administrador ODBC de 32 bits.</td><td>Abre "Orígenes de datos ODBC (<strong>64 bits</strong>)" y crea o ajusta <strong>EmbutidosS.A</strong> con el driver MySQL ODBC 8.x, localhost:3306, root y la base dbsistemaembutidos. Pulsa <strong>Test</strong>. El nombre tiene que ser exacto.</td></tr>
+      <tr><td>No conecta (<em>"Can't connect to MySQL server"</em>, Workbench no abre la conexión)</td><td>El servicio de MySQL está apagado.</td><td><kbd>Win</kbd>+<kbd>R</kbd> → <code>services.msc</code> › <strong>MySQL80</strong> › <strong>Iniciar</strong>.</td></tr>
+      <tr><td><em>BadImageFormatException</em> al arrancar</td><td>La app corre en 32 bits y la DLL del Navegador es de 64 bits (x64).</td><td>Proyecto › Propiedades › Compilación: desmarca <strong>"Preferir 32 bits"</strong> (o Destino de la plataforma = x64). Recompila.</td></tr>
+      <tr><td>Ingresar / Modificar / Eliminar / Imprimir <strong>en gris</strong></td><td>(a) No hay sesión (sale <em>"No hay una sesión activa. Inicie sesión desde el Login de Seguridad para habilitar el Navegador."</em>).<br>(b) El número de aplicación en <code>NavegadorMetConfigurar</code> no es el de Productos.<br>(c) El rol del usuario no tiene fila o permiso en <code>tblrolmoduloaplicacion</code>.<br>(d) Cambiaste permisos y no reiniciaste la app.</td><td>(a) Arranca desde el login (Program.cs → FrmLogin → Form1).<br>(b) <code>SELECT idAplicacion FROM tblaplicacion WHERE nombreAplicacion='Productos';</code> y pon ese número.<br>(c) <code>SELECT * FROM tblrolmoduloaplicacion WHERE idAplicacion = N;</code><br>(d) Cierra la app y vuelve a abrirla.</td></tr>
+      <tr><td><em>"La tabla indicada no existe o el nombre está escrito incorrectamente. Verifique el nombre configurado para el CRUD."</em></td><td>El nombre en <code>NavegadorMetConfigurar</code> o <code>NavegadorMetCambiarTabla</code> está mal escrito, o la tabla se creó en otra base.</td><td>Revisa <code>"tblproducto"</code> letra por letra. Comprueba que se creó después de <code>USE dbsistemaembutidos;</code> (<code>SHOW TABLES;</code>).</td></tr>
+      <tr><td>Aparece el diálogo <strong>"Definir llave primaria"</strong></td><td>La tabla no tiene PRIMARY KEY que se pueda detectar.</td><td>Para salir del paso, marca la columna id y acepta. La solución buena es <code>ALTER TABLE tblX ADD PRIMARY KEY (idX);</code> o volver a crear la tabla con PK.</td></tr>
+      <tr><td>El combo <strong>idCategoria sale vacío</strong></td><td>La tabla relacionada (tblcategoriaproducto) no tiene datos.</td><td><code>INSERT INTO tblcategoriaproducto (nombreCategoria) VALUES ('Chorizos'),('Jamones'),('Salchichas');</code> o ingrésalas con el botón Categorías (Extra).</td></tr>
+      <tr><td><em>"Error al eliminar: El registro no puede guardarse o eliminarse porque existe una relación de llave foránea."</em></td><td>Otro registro usa el que intentas borrar (por ejemplo, un producto usa esa categoría).</td><td>Así debe funcionar: es la integridad referencial. Borra antes los registros hijos o no borres ese.</td></tr>
+      <tr><td><em>"Ya existe un registro con el mismo valor en un campo único."</em></td><td>Repetiste un valor en una columna UNIQUE o en la PK.</td><td>Cambia el valor. Si la PK no es AUTO_INCREMENT, conviene que lo sea.</td></tr>
+      <tr><td><em>"El nombre 'navegador2' no existe en el contexto actual"</em> (CS0103)</td><td>En tu formulario el control tiene otro nombre (por ejemplo navegador1) o estás en otro archivo.</td><td>En el Diseñador selecciona el Navegador, pulsa <kbd>F4</kbd>, mira <strong>(Name)</strong> y usa ese nombre en el código.</td></tr>
+      <tr><td><em>"Error Code: 1050. Table 'tblproducto' already exists"</em></td><td>Ya la habías creado.</td><td>No pasa nada: sigue adelante. Si quieres empezar de cero, usa <a href="#reinicio">Reiniciar la práctica</a>.</td></tr>
+      <tr><td><code>@app</code> sale NULL (<em>"Column 'idAplicacion' cannot be null"</em>)</td><td>Ejecutaste el script por partes, en otra pestaña o sin el <code>SET @app = …</code>.</td><td>Ejecuta el bloque completo con <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd>. O mira el número con <code>SELECT idAplicacion FROM tblaplicacion WHERE nombreAplicacion='Productos';</code> y escríbelo en lugar de @app.</td></tr>
+      <tr><td><em>"Error Code: 1175. You are using safe update mode…"</em></td><td>Workbench bloquea los UPDATE y DELETE que no filtran por la llave.</td><td>Ejecuta antes <code>SET SQL_SAFE_UPDATES = 0;</code></td></tr>
+      <tr><td><em>"Usuario o contraseña incorrectos"</em></td><td>La contraseña no es la correcta.</td><td>imelendez / admin. cramirez / admin2 (o admin3). UsuarioExamen / la que dé el catedrático. Revisa las mayúsculas.</td></tr>
+      <tr><td><em>"Acceso denegado: No tienes acceso a este módulo."</em></td><td>Abriste una pantalla de Seguridad (por ejemplo "Asignación Aplicación Perfiles") con un usuario sin acceso.</td><td>Entra con <strong>imelendez</strong> (Administrador).</td></tr>
+      <tr><td>Los botones extra (Productos / Categorías) <strong>quedan tapados</strong></td><td>El Navegador crece hacia abajo y se pone al frente.</td><td>Pon los botones <strong>arriba</strong> (Y ≈ 8) y el Navegador en Location 0, 45.</td></tr>
+      <tr><td>Guardar dice <em>"Abra un registro con Ingresar o Modificar antes de guardar."</em></td><td>Pulsaste Guardar sin tener el panel abierto.</td><td>Primero Ingresar o Modificar, luego Guardar.</td></tr>
+    </tbody>
+  </table></div>
+
+  <figure class="shot"><img src="img/11_configuracion_odbc.png" alt="Administrador ODBC de 64 bits con el DSN EmbutidosS.A configurado y prueba de conexión exitosa" loading="lazy"><figcaption>Así debe estar el DSN: "EmbutidosS.A" en el administrador ODBC de <strong>64 bits</strong>, TCP/IP localhost:3306, usuario root, base dbsistemaembutidos y "Connection successful" al pulsar Test. <em>(Captura del manual.)</em></figcaption></figure>
+</section>
+
+<!-- ===================================================================== -->
+
+<section id="teoria" class="paso">
+  <header class="paso-head"><span class="num ref">?</span><div><h2>Preguntas de análisis (respuestas cortas)</h2><p class="meta">📍 Léelas en voz alta una vez</p></div></header>
+
+    <details class="qa"><summary>¿Qué es el IdModulo (y el IdAplicacion)?</summary><div>
+    <p>Son llaves de Seguridad, no datos del negocio. <strong>IdModulo</strong> es una fila de <code>tblmodulo</code>: un área del sistema (1 Producción, 2 Inventario, 3 Ventas, 4 Seguridad). <strong>IdAplicacion</strong> es una fila de <code>tblaplicacion</code>: una pantalla dentro de ese módulo (por ejemplo «Productos»). Los permisos (<code>tblrolmoduloaplicacion</code>) se guardan por rol + módulo + aplicación, y el Navegador los busca con los dos números que recibe en <code>NavegadorMetConfigurar</code>. «Inventario» no crea ningún inventario: solo dice en qué área vive la pantalla. Más detalle en <a href="#modulos">¿Qué es el IdModulo?</a>.</p>
+  </div></details>
+
+<details class="qa"><summary>¿Qué es el Navegador?</summary><div>
+    <p>Un <strong>control de usuario de WinForms reutilizable</strong>: una barra de 14 botones que da un CRUD completo sobre cualquier tabla de MySQL sin programar formularios. Arma los campos leyendo la estructura de la tabla y aplica la seguridad del sistema (permisos por rol y bitácora).</p>
+  </div></details>
+
+  <details class="qa"><summary>¿Qué hace NavegadorMetConfigurar y qué son sus 3 parámetros?</summary><div>
+    <p><code>NavegadorMetConfigurar(Tabla, IdModulo, IdAplicacion)</code>. <strong>Tabla</strong> es el nombre exacto en MySQL (qué se enseña y se edita). <strong>IdModulo</strong> e <strong>IdAplicacion</strong> son el módulo y la aplicación de Seguridad (2 Inventario, Productos) y sirven para buscar los permisos del rol. Si el formulario ya está cargado arma el CRUD al momento; si no, lo hace en OnLoad.</p>
+  </div></details>
+
+  <details class="qa"><summary>¿Cómo sabe qué campos poner en el formulario?</summary><div>
+    <p>Lee el <strong>esquema</strong>: <code>ClsEsquema</code> (capa Modelo) usa <code>GetSchema("Columns")</code> de ODBC e <code>INFORMATION_SCHEMA</code> para sacar columnas, tipos, longitudes, NULL, PK y FK (también intenta detectar el autoincremento, pero el driver ODBC de MySQL no entrega ese dato, así que la PK sale editable). Con eso <code>ClsCrudFormulario</code> crea cada control: FK → ComboBox, DATE → DateTimePicker, TINYINT(1) → CheckBox y el resto TextBox. Las validaciones salen de los mismos metadatos.</p>
+    <figure class="shot"><img src="img/04_lectura_esquema.png" alt="Código que lee el esquema de la tabla con GetSchema Columns y obtiene llaves primarias, foráneas y tipos" loading="lazy"><figcaption>Lectura del esquema: columnas, llaves primarias, llaves foráneas y tipos. <em>(Captura del manual: código del componente.)</em></figcaption></figure>
+  </div></details>
+
+  <details class="qa"><summary>¿Cómo se integra con Seguridad?</summary><div>
+    <p>En tres cosas. (1) <strong>Sesión</strong>: usa el usuario que entró por el Login de Seguridad; sin sesión avisa y deja en gris los 4 botones de permisos. (2) <strong>Permisos</strong>: consulta <code>tblrolmoduloaplicacion</code> con los roles del usuario, el módulo y la aplicación. (3) <strong>Bitácora</strong>: cada INSERT, UPDATE y DELETE queda en <code>tblbitacora</code> con el idUsuario. Todo pasa por <code>CapaControlador_Seguridad</code>, y la conexión es el DSN de <code>ClsConexion</code> de Seguridad.</p>
+  </div></details>
+
+  <details class="qa"><summary>¿Por qué salen botones en gris?</summary><div>
+    <p>Porque el rol del usuario no tiene ese derecho (<code>derInsertar</code>, <code>derEditar</code>, <code>derEliminar</code> o <code>derImprimir</code> = 0) para ese módulo y esa aplicación, porque no hay sesión o porque los IDs configurados no son los correctos. Solo afecta a Ingresar, Modificar, Eliminar e Imprimir; los otros 10 no cambian datos y siempre están activos. Se evalúa una sola vez, al abrir el formulario.</p>
+  </div></details>
+
+  <details class="qa"><summary>¿Permisos por usuario o por rol?</summary><div>
+    <p>Seguridad tiene los dos: por usuario (<code>tblusuariomoduloaplicacion</code>, pantalla "Asignación Aplicación Usuario") y por rol (<code>tblrolmoduloaplicacion</code>, "Asignación Aplicación Perfiles"). <strong>El Navegador solo lee los de rol</strong> y combina todos los roles del usuario: basta que uno lo permita. Los de usuario se ignoran; es una mejora pendiente.</p>
+  </div></details>
+
+  <details class="qa"><summary>¿Qué es la bitácora y por qué va en una transacción?</summary><div>
+    <p>Es el <strong>registro de auditoría</strong>: quién (idUsuario), qué acción, en qué tabla, qué registro, el detalle, la IP y la fecha y hora. Se escribe en la <strong>misma transacción</strong> que el cambio (<code>ClsTransaccion</code>): si algo falla se hace rollback de los dos. Así nunca queda un cambio sin auditar ni una auditoría de un cambio que no pasó (atomicidad).</p>
+  </div></details>
+
+  <details class="qa"><summary>¿Qué capas tiene y por qué no referencia a CapaVista_Seguridad?</summary><div>
+    <p>MVC en 3 capas. <strong>Vista</strong> (<code>CapaVista_Navegador</code>): el control, el formulario dinámico <code>ClsCrudFormulario</code>, la cuadrícula <code>ClsCrudGrid</code> y el coordinador <code>ClsCrudCoordinador</code>. <strong>Controlador</strong> (<code>CapaControlador_Navegador</code>): validaciones y controladores. <strong>Modelo</strong> (<code>CapaModelo_Navegador</code>): esquema, <code>ClsRegistros</code> (INSERT, UPDATE y DELETE parametrizados) y transacciones. CapaVista_Seguridad ya referencia al Navegador; si el Navegador la referenciara a ella habría una <strong>dependencia circular</strong> y no compilaría. Por eso solo usa <code>CapaControlador_Seguridad</code>.</p>
+  </div></details>
+
+  <details class="qa"><summary>¿Qué usa el botón Consultar?</summary><div>
+    <p>El <strong>componente Consultas</strong> (<code>FrmConsultasSimples</code>). Se agrega un filtro con Campo, Operador (<code>=</code>, <code>&lt;&gt;</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>, Contiene, Comienza con, Termina con) y Valor. Al hacer doble clic en un registro devuelve su PK y el Navegador filtra la cuadrícula a ese registro. Es un ejemplo de integración entre componentes.</p>
+  </div></details>
+
+  <details class="qa"><summary>¿Por qué no imprime?</summary><div>
+    <p>Imprimir depende del <strong>componente Reporteador</strong>, que es de otro equipo y todavía no está integrado (falta acordar qué parámetro recibe además del código de aplicación). El botón existe, está conectado y respeta <code>derImprimir</code>; mientras tanto avisa en lugar de fallar.</p>
+  </div></details>
+
+  <details class="qa"><summary>¿Eliminar es físico o lógico?</summary><div>
+    <p><strong>Físico</strong>: el Navegador hace <code>DELETE</code> y la fila desaparece, aunque la tabla tenga <code>is_active</code>. El borrado lógico sería <code>UPDATE … SET is_active = 0</code> y consultar solo lo activo: se conserva el historial y no choca con las FK. Es una mejora que puedes proponer.</p>
+  </div></details>
+
+  <details class="qa"><summary>¿Qué es ODBC, qué es un DSN y por qué 64 bits?</summary><div>
+    <p><strong>ODBC</strong> es la interfaz estándar de Windows para conectarse a bases de datos mediante un driver. El <strong>DSN</strong> es una conexión guardada con nombre (servidor, puerto, usuario, contraseña y base), en este caso "EmbutidosS.A", y el código solo conoce ese nombre (fijo en <code>ClsConexion</code>). Los drivers y los DSN son de 32 o de 64 bits; como la DLL es x64, la app tiene que correr en 64 bits (<code>Prefer32Bit = false</code>). Si no, da BadImageFormatException o "DSN no encontrado".</p>
+  </div></details>
+
+  <details class="qa"><summary>¿Qué pasa si la tabla no tiene PK (o no es autoincremental)?</summary><div>
+    <p>Sin PK no puede identificar la fila para UPDATE y DELETE: aparece el diálogo <strong>"Definir llave primaria"</strong> para que marques las columnas que la identifican, y Consultar avisa de que no hay una llave detectable. Si la PK no es autoincremental hay que escribirla a mano: el componente tiene un método que calcula MAX+1 (<code>NavegadorFuncObtenerSiguienteValorLlave</code>), pero la vista no lo usa. Si repites un valor sale "Ya existe un registro con el mismo valor en un campo único."</p>
+  </div></details>
+
+  <details class="qa"><summary>¿Qué ventajas y desventajas tiene frente a programar un CRUD por tabla?</summary><div>
+    <p><strong>Ventajas</strong>: se reutiliza (una línea de configuración por tabla), todos los CRUD se comportan igual, la seguridad y la bitácora están centralizadas y hay menos código que mantener. <strong>Desventajas</strong>: la interfaz es genérica, no hay reglas de negocio propias de cada tabla (un precio negativo se acepta) y todo depende de que la base esté bien diseñada (PK y FK reales).</p>
+  </div></details>
+
+  <details class="qa"><summary>¿Qué debilidades tiene y qué mejoras propondrías?</summary><div>
+    <p>(1) <strong>La tabla y el permiso no están ligados</strong>: se puede poner cualquier tabla con los IDs de otra aplicación; convendría asociar cada tabla con su aplicación. (2) <strong>Borrado lógico</strong> con is_active. (3) <strong>Leer también los permisos por usuario</strong>. (4) <strong>DSN configurable</strong> (App.config) en vez de fijo en el código. (5) <strong>Integrar el Reporteador</strong>. (6) <strong>Reglas de negocio</strong> además de las de tipo (precio &gt; 0, fecha futura). (7) Recargar los permisos sin reiniciar. (8) Detectar el AUTO_INCREMENT con INFORMATION_SCHEMA (columna EXTRA), porque el driver ODBC de MySQL no lo informa y la PK sale editable.</p>
+  </div></details>
+</section>
+
+<!-- ===================================================================== -->
+
+<section id="reinicio" class="paso">
+  <header class="paso-head"><span class="num ref">↺</span><div><h2>Reiniciar la práctica (para repetirla desde cero)</h2><p class="meta">⏱ 1 min · 📍 MySQL Workbench</p></div></header>
+
+  <p>Borra solo lo que creaste en esta práctica. Ejecútalo <strong>todo junto</strong> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd>):</p>
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench</span><button class="copy" type="button">Copiar</button></div><pre><code>USE dbsistemaembutidos;
+SET SQL_SAFE_UPDATES = 0;
+SET @app = (SELECT idAplicacion FROM tblaplicacion WHERE nombreAplicacion = 'Productos');
+DELETE FROM tblrolmoduloaplicacion WHERE idAplicacion = @app;
+DELETE FROM tblaplicacion WHERE idAplicacion = @app;
+DROP TABLE IF EXISTS tblproducto;
+DROP TABLE IF EXISTS tblcategoriaproducto;</code></pre></div>
+  <div class="nota info"><strong>El orden importa</strong><p>Primero se borra <code>tblproducto</code> y después <code>tblcategoriaproducto</code>, porque la FK de productos apunta a categorías. Al revés, MySQL no deja borrar la tabla padre.</p></div>
+  <div class="nota warn"><strong>No toques nada más</strong><p>Esto borra <strong>solo la práctica</strong>. No borres usuarios, roles, módulos ni otras tablas del sistema, y tampoco la bitácora (ahí queda el historial de lo que hiciste, y está bien que quede). Además, cuando vuelvas a crear la aplicación "Productos" le tocará <strong>otro número</strong> (17, 18…): vuelve a hacer el <code>SELECT idAplicacion …</code> y actualiza Form1.</p></div>
+
+  <p>Si quieres dejar Form1 como estaba al principio (con tblempleado, módulo 4 y aplicación 5), cambia la línea del constructor:</p>
+  <div class="code"><div class="code-bar"><span>C# · Form1.cs (constructor)</span><button class="copy" type="button">Copiar</button></div><pre><code>navegador2.NavegadorMetConfigurar("tblempleado", 4, 5);</code></pre></div>
+  <p>Si hiciste el Extra de dos tablas, borra también los botones en el Diseñador (clic → <kbd>Supr</kbd>) y sus métodos <code>…_Click</code> en Form1.cs.</p>
+</section>
+
+<!-- ===================================================================== -->
+
+<section id="checklist" class="paso">
+  <header class="paso-head"><span class="num ref">✓</span><div><h2>Checklist final</h2><p class="meta">📍 Marca cada punto; se guarda en este navegador</p></div></header>
+
+  <div class="grid2">
+    <div>
+      <h3>Esta noche (práctica)</h3>
+      <ul class="check">
+        <li><label><input type="checkbox" data-k="c2-noche-login"> Entré con imelendez y cargué la cuadrícula con Refrescar.</label></li>
+        <li><label><input type="checkbox" data-k="c2-noche-ingresar"> Ingresé los 3 productos (Chorizo parrillero, Jamón de pavo, Salchicha Viena).</label></li>
+        <li><label><input type="checkbox" data-k="c2-noche-validacion"> Provoqué "Validación de datos" (nombre vacío y precio abc).</label></li>
+        <li><label><input type="checkbox" data-k="c2-noche-modificar"> Modifiqué un precio y vi el cambio en la cuadrícula.</label></li>
+        <li><label><input type="checkbox" data-k="c2-noche-consultar"> Filtré con Consultar (Contiene) y volví a verlo todo con Refrescar.</label></li>
+        <li><label><input type="checkbox" data-k="c2-noche-eliminar"> Eliminé un producto de prueba.</label></li>
+        <li><label><input type="checkbox" data-k="c2-noche-cramirez"> Entré con cramirez y vi Eliminar e Imprimir en gris.</label></li>
+        <li><label><input type="checkbox" data-k="c2-noche-envivo"> Hice el cambio en vivo (UPDATE → reiniciar → Eliminar activo) y lo dejé como estaba.</label></li>
+        <li><label><input type="checkbox" data-k="c2-noche-bitacora"> Consulté la bitácora y vi LOGIN, INSERT, UPDATE y DELETE.</label></li>
+        <li><label><input type="checkbox" data-k="c2-noche-teoria"> Repasé en voz alta las preguntas de análisis.</label></li>
+      </ul>
+    </div>
+    <div>
+      <h3>En el examen</h3>
+      <ul class="check">
+        <li><label><input type="checkbox" data-k="c2-examen-mysql"> MySQL80 iniciado (services.msc) y Workbench conectado.</label></li>
+        <li><label><input type="checkbox" data-k="c2-examen-use"> Puse <code>USE dbsistemaembutidos;</code> antes de cualquier script.</label></li>
+        <li><label><input type="checkbox" data-k="c2-examen-idapp"> Anoté el idAplicacion real (SELECT) y es el mismo que el de NavegadorMetConfigurar.</label></li>
+        <li><label><input type="checkbox" data-k="c2-examen-rol"> Di los permisos al ROL (tblrolmoduloaplicacion), no al usuario.</label></li>
+        <li><label><input type="checkbox" data-k="c2-examen-nombre"> Comprobé el nombre del control en Propiedades → (Name) (navegador2).</label></li>
+        <li><label><input type="checkbox" data-k="c2-examen-compila"> Compila sin errores y arranca por el login.</label></li>
+        <li><label><input type="checkbox" data-k="c2-examen-prueba"> Probé el CRUD completo antes de llamar al catedrático.</label></li>
+        <li><label><input type="checkbox" data-k="c2-examen-reinicio"> Después de cambiar permisos, cerré y volví a abrir la app.</label></li>
+        <li><label><input type="checkbox" data-k="c2-examen-bitacora"> Tengo la consulta de la bitácora lista en una pestaña de Workbench.</label></li>
+        <li><label><input type="checkbox" data-k="c2-examen-guion"> Tengo a mano el guion de 60 segundos (paso 6).</label></li>
+      </ul>
+    </div>
+  </div>
+</section>
