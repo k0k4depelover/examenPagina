@@ -1,0 +1,478 @@
+<section id="rep-resumen" class="paso emerg">
+  <header class="paso-head"><span class="num">🚨</span><div><h2>EMERGENCIA · Tu propio Reporteador en 3 capas (RDLC)</h2><p class="meta">⏱ plan de 1 hora · 📍 Visual Studio + tu solución PruebaExamen</p></div></header>
+
+  <div class="nota danger"><strong>Si solo tienes 1 hora: sigue R1 → R7 en orden y copia/pega</strong><p>No leas todo antes de empezar. Abre <code>PruebaExamen.sln</code>, ve al <a href="#rep-proyectos">paso R1</a> y copia los bloques de código <strong>tal cual</strong> (botón <em>Copiar</em>). Compila (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd>) al final de cada paso: si algo falla, salta a <a href="#rep-errores">Errores típicos</a>.</p></div>
+
+  <h3>Qué vas a construir (resultado final)</h3>
+  <div class="grid2">
+    <div>
+      <ul>
+        <li>Un botón <strong>«Reporte»</strong> en <code>Form1</code>, junto a tu Navegador. Es un control tuyo (<code>BtnReporteador</code>) que arrastras desde el Cuadro de herramientas.</li>
+        <li>Se configura en <strong>1 línea</strong>, igual que el Navegador:<br><code>btnReporteador1.ReporteadorMetConfigurar("tblproducto", @"Reportes\RpProductos.rdlc");</code></li>
+        <li>Al hacer clic abre una ventana con el reporte: <strong>título, tabla con los productos, fecha y número de página</strong>.</li>
+        <li>Desde la barra del ReportViewer puedes <strong>imprimir</strong> y <strong>exportar a PDF, Excel o Word</strong> sin programar nada extra.</li>
+        <li>Todo separado en <strong>Vista – Controlador – Modelo</strong>, como los componentes del curso.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="win"><div class="win-title">Reporte · tblproducto</div><div class="win-body">
+        <p>⏮ ◀ <span class="input">1</span> de 1 ▶ ⏭ &nbsp;·&nbsp; ⟳ &nbsp;·&nbsp; ⎙ Imprimir &nbsp;·&nbsp; 💾 Exportar ▾ &nbsp;·&nbsp; 🔍 <span class="input combo">100% ▾</span></p>
+        <p><strong>Embutidos de Calidad S.A. — Reporte de productos</strong></p>
+        <div class="tabla-wrap"><table class="tabla">
+          <thead><tr><th>ID</th><th>Cat.</th><th>Producto</th><th>Precio</th><th>Vence</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>1</td><td>Chorizo parrillero</td><td>Q 35.00</td><td>15/12/2026</td></tr>
+            <tr><td>2</td><td>2</td><td>Jamón de pavo</td><td>Q 42.50</td><td>30/11/2026</td></tr>
+            <tr><td>3</td><td>3</td><td>Salchicha Frankfurt</td><td>Q 28.00</td><td>10/12/2026</td></tr>
+          </tbody>
+        </table></div>
+        <p>Fecha: 29/09/2026 &nbsp;·&nbsp; Página 1 de 1</p>
+      </div></div>
+      <p>Así se ve la ventana <code>FrmVisorReporte</code> (datos de ejemplo). <strong>💾 Exportar ▾</strong> ofrece Excel, PDF y Word.</p>
+    </div>
+  </div>
+
+  <h3>¿Crystal Reports o RDLC?</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Pregunta</th><th>Crystal Reports</th><th>RDLC + ReportViewer</th></tr></thead>
+    <tbody>
+      <tr><td>¿Está instalado en tu máquina?</td><td>❌ No (no hay <code>CrystalDecisions</code> en el GAC)</td><td>✅ Sí: el paquete NuGet ya está en tu caché local</td></tr>
+      <tr><td>¿Lo usa el proyecto del curso?</td><td>❌ No</td><td>✅ Sí: Seguridad tiene 9 reportes <code>.rdlc</code> con ReportViewer</td></tr>
+      <tr><td>¿Funciona sin internet?</td><td>❌ Hay que descargar el instalador de SAP</td><td>✅ Sí (caché NuGet o DLL copiadas)</td></tr>
+      <tr><td>Exportar e imprimir</td><td>PDF, Excel, Word</td><td>PDF, Excel, Word (barra del visor)</td></tr>
+      <tr><td>Archivo del diseño</td><td><code>.rpt</code> (binario)</td><td><code>.rdlc</code> (XML: se puede pegar, ver <a href="#rep-rdlc">R5</a>)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="nota ok"><strong>Decisión: RDLC</strong><p>Crystal <strong>no está instalado</strong> en tu máquina y el proyecto del curso (Seguridad) <strong>ya usa RDLC</strong> con ReportViewer. Si el catedrático exige Crystal sí o sí, ve a la sección de <a href="#rep-extras">extras</a>.</p></div>
+
+  <h3>Arquitectura: quién llama a quién</h3>
+  <svg viewBox="0 0 820 620" width="100%" role="img" aria-label="Arquitectura del Reporteador: PruebaExamen llama a CapaVista_Reporteador, que llama a CapaControlador_Reporteador, que llama a CapaModelo_Reporteador, que consulta MySQL dbsistemaembutidos por el DSN EmbutidosS.A. El DataTable regresa hasta la Vista, que pinta el reporte.">
+    <defs><marker id="flechaRa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+
+    <!-- Etiquetas de capa (izquierda) -->
+    <text x="136" y="60" text-anchor="end" font-size="13" font-weight="600" class="d-muted">TU APP</text>
+    <text x="136" y="183" text-anchor="end" font-size="13" font-weight="600" class="d-muted">VISTA</text>
+    <text x="136" y="299" text-anchor="end" font-size="13" font-weight="600" class="d-muted">CONTROLADOR</text>
+    <text x="136" y="405" text-anchor="end" font-size="13" font-weight="600" class="d-muted">MODELO</text>
+    <text x="136" y="506" text-anchor="end" font-size="13" font-weight="600" class="d-muted">BASE DE DATOS</text>
+
+    <!-- 1 PruebaExamen -->
+    <rect x="150" y="10" width="500" height="90" rx="10" class="d-box"/>
+    <text x="400" y="38" text-anchor="middle" font-size="15" font-weight="600" class="d-text">PruebaExamen · tu programa WinForms</text>
+    <text x="400" y="62" text-anchor="middle" font-size="13" class="d-text-sm">Form1 con btnReporteador1 (1 línea para configurarlo)</text>
+    <text x="400" y="84" text-anchor="middle" font-size="13" class="d-text-sm">Reportes\RpProductos.rdlc (el diseño del reporte)</text>
+
+    <line x1="400" y1="102" x2="400" y2="127" class="d-line" marker-end="url(#flechaRa)"/>
+    <text x="412" y="120" font-size="13" class="d-muted">① clic en «Reporte»</text>
+
+    <!-- 2 Vista -->
+    <rect x="150" y="130" width="500" height="96" rx="10" class="d-accent"/>
+    <text x="400" y="157" text-anchor="middle" font-size="15" font-weight="600" class="d-text">CapaVista_Reporteador</text>
+    <text x="400" y="181" text-anchor="middle" font-size="13" class="d-text-sm">BtnReporteador · el botón (UserControl)</text>
+    <text x="400" y="204" text-anchor="middle" font-size="13" class="d-text-sm">FrmVisorReporte + ReportViewer: pinta el .rdlc</text>
+
+    <line x1="400" y1="228" x2="400" y2="253" class="d-line" marker-end="url(#flechaRa)"/>
+    <text x="412" y="246" font-size="13" class="d-muted">② ¿tabla y .rdlc válidos?</text>
+
+    <!-- 3 Controlador -->
+    <rect x="150" y="256" width="500" height="76" rx="10" class="d-accent"/>
+    <text x="400" y="283" text-anchor="middle" font-size="15" font-weight="600" class="d-text">CapaControlador_Reporteador</text>
+    <text x="400" y="310" text-anchor="middle" font-size="13" class="d-text-sm">ClsControladorReporte: valida tabla, SELECT y ruta .rdlc</text>
+
+    <line x1="400" y1="334" x2="400" y2="359" class="d-line" marker-end="url(#flechaRa)"/>
+    <text x="412" y="352" font-size="13" class="d-muted">③ pide los datos</text>
+
+    <!-- 4 Modelo -->
+    <rect x="150" y="362" width="500" height="76" rx="10" class="d-accent"/>
+    <text x="400" y="389" text-anchor="middle" font-size="15" font-weight="600" class="d-text">CapaModelo_Reporteador</text>
+    <text x="400" y="416" text-anchor="middle" font-size="13" class="d-text-sm">ClsSentenciasReporte (SELECT → DataTable) · ClsConexion (ODBC)</text>
+
+    <line x1="400" y1="440" x2="400" y2="465" class="d-line" marker-end="url(#flechaRa)"/>
+    <text x="412" y="458" font-size="13" class="d-muted">④ SELECT * FROM tblproducto</text>
+
+    <!-- 5 MySQL -->
+    <rect x="150" y="468" width="500" height="66" rx="10" class="d-box"/>
+    <text x="400" y="496" text-anchor="middle" font-size="15" font-weight="600" class="d-text">MySQL 8 · dbsistemaembutidos</text>
+    <text x="400" y="520" text-anchor="middle" font-size="13" class="d-text-sm">ODBC · DSN «EmbutidosS.A»</text>
+
+    <!-- Regreso: DataTable -->
+    <path d="M652,501 H705 V178 H654" class="d-line" stroke-dasharray="7 5" marker-end="url(#flechaRa)"/>
+    <text x="714" y="330" font-size="14" font-weight="600" class="d-text">⑤ DataTable</text>
+    <text x="714" y="350" font-size="13" class="d-text-sm">regresa con</text>
+    <text x="714" y="368" font-size="13" class="d-text-sm">los datos</text>
+
+    <!-- Leyenda -->
+    <text x="410" y="568" text-anchor="middle" font-size="13" class="d-muted">Flechas hacia abajo = petición · flecha punteada = los datos regresan (DataTable)</text>
+    <text x="410" y="590" text-anchor="middle" font-size="13" class="d-muted">Las referencias apuntan en un solo sentido: PruebaExamen → Vista → Controlador → Modelo</text>
+    <text x="410" y="611" text-anchor="middle" font-size="13" class="d-muted">El Modelo no conoce a nadie.</text>
+  </svg>
+
+  <h3>Qué va en cada capa</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Proyecto</th><th>Responsabilidad (1 línea)</th><th>Archivos</th><th>Referencia a</th></tr></thead>
+    <tbody>
+      <tr><td><strong>CapaModelo_Reporteador</strong></td><td>Habla con MySQL: abre ODBC y convierte un SELECT en <code>DataTable</code>.</td><td><code>ClsConexion.cs</code>, <code>ClsSentenciasReporte.cs</code></td><td>nadie</td></tr>
+      <tr><td><strong>CapaControlador_Reporteador</strong></td><td>Reglas: valida la tabla, que sea SELECT y que el <code>.rdlc</code> exista.</td><td><code>ClsControladorReporte.cs</code></td><td>Modelo</td></tr>
+      <tr><td><strong>CapaVista_Reporteador</strong></td><td>Lo que se ve: el botón y la ventana con el ReportViewer.</td><td><code>BtnReporteador.cs</code>, <code>FrmVisorReporte.cs</code></td><td>Controlador + NuGet ReportViewer</td></tr>
+      <tr><td><strong>PruebaExamen</strong></td><td>Usa el botón y guarda el diseño del reporte.</td><td><code>Form1.cs</code>, <code>Reportes\RpProductos.rdlc</code></td><td>Vista</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Plan de 1 hora</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Paso</th><th>Qué haces</th><th>Min</th><th>Acumulado</th></tr></thead>
+    <tbody>
+      <tr><td><a href="#rep-proyectos">R1</a></td><td>Crear los 3 proyectos, referencias y ReportViewer</td><td>8</td><td>0:08</td></tr>
+      <tr><td><a href="#rep-modelo">R2</a></td><td>Capa Modelo (2 clases)</td><td>5</td><td>0:13</td></tr>
+      <tr><td><a href="#rep-controlador">R3</a></td><td>Capa Controlador (1 clase)</td><td>5</td><td>0:18</td></tr>
+      <tr><td><a href="#rep-vista">R4</a></td><td>Capa Vista: botón + visor</td><td>10</td><td>0:28</td></tr>
+      <tr><td><a href="#rep-rdlc">R5</a></td><td>El reporte <code>.rdlc</code></td><td>8</td><td>0:36</td></tr>
+      <tr><td><a href="#rep-form1">R6</a></td><td>Poner el botón en Form1 y probar</td><td>8</td><td>0:44</td></tr>
+      <tr><td><a href="#rep-extras">R7</a></td><td>Extras (solo si sobra tiempo)</td><td>—</td><td>—</td></tr>
+      <tr><td>⏳</td><td>Colchón para errores (<a href="#rep-errores">Errores típicos</a>)</td><td>16</td><td>1:00</td></tr>
+    </tbody>
+  </table></div>
+
+  <p><strong>Ir directo a:</strong> <a href="#rep-proyectos">R1 Proyectos</a> · <a href="#rep-modelo">R2 Modelo</a> · <a href="#rep-controlador">R3 Controlador</a> · <a href="#rep-vista">R4 Vista</a> · <a href="#rep-rdlc">R5 .rdlc</a> · <a href="#rep-form1">R6 Form1</a> · <a href="#rep-extras">R7 Extras</a> · <a href="#rep-errores">Errores</a></p>
+</section>
+
+<section id="rep-proyectos" class="paso emerg">
+  <header class="paso-head"><span class="num">R1</span><div><h2>Crear los 3 proyectos y sus referencias</h2><p class="meta">⏱ 8 min · 📍 Visual Studio › Explorador de soluciones</p></div></header>
+
+  <h3>A) Crear CapaModelo_Reporteador</h3>
+  <ol class="steps">
+    <li>Abre <code>C:\Users\oskar\Desktop\PruebaExamen\PruebaExamen.sln</code>. Si no ves el Explorador de soluciones: <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>L</kbd>.</li>
+    <li>Clic derecho en la primera línea, <strong>Solución 'PruebaExamen'</strong> › <strong>Agregar</strong> › <strong>Nuevo proyecto…</strong></li>
+    <li>En el buscador escribe <code>biblioteca de clases framework</code> y elige <strong>Biblioteca de clases (.NET Framework)</strong> con la etiqueta <strong>C#</strong>. ¡<strong>NO</strong> la que dice solo «Biblioteca de clases» (esa es .NET moderno)! › <strong>Siguiente</strong>.</li>
+    <li>Nombre del proyecto: <code>CapaModelo_Reporteador</code>. Ubicación: deja la que propone (<code>C:\Users\oskar\Desktop\PruebaExamen</code>). Marco (Framework): <strong>.NET Framework 4.8</strong> › <strong>Crear</strong>.</li>
+    <li>En el proyecto nuevo, clic derecho en <code>Class1.cs</code> › <strong>Eliminar</strong> › <strong>Aceptar</strong>.</li>
+  </ol>
+
+  <div class="grid2">
+    <div>
+      <div class="win"><div class="win-title">Agregar un nuevo proyecto</div><div class="win-body">
+        <div class="field"><label>Buscar plantillas</label><span class="input">biblioteca de clases framework</span></div>
+        <div class="field"><label>Filtros</label><span class="input combo">C# ▾</span> <span class="input combo">Windows ▾</span> <span class="input combo">Biblioteca ▾</span></div>
+        <div class="tabla-wrap"><table class="tabla">
+          <tbody>
+            <tr><td>✘</td><td>Biblioteca de clases <em>(.NET / .NET Standard)</em></td><td>NO</td></tr>
+            <tr><td>✔</td><td><strong>Biblioteca de clases (.NET Framework)</strong></td><td><strong>ESTA</strong></td></tr>
+            <tr><td>✔</td><td><strong>Biblioteca de controles de Windows Forms (.NET Framework)</strong></td><td>solo para la Vista</td></tr>
+          </tbody>
+        </table></div>
+        <span class="btn-mock">Siguiente</span>
+      </div></div>
+    </div>
+    <div>
+      <div class="win"><div class="win-title">Configurar el nuevo proyecto</div><div class="win-body">
+        <p><strong>Biblioteca de clases (.NET Framework)</strong> · C# · Windows · Biblioteca</p>
+        <div class="field"><label>Nombre del proyecto</label><span class="input">CapaModelo_Reporteador</span></div>
+        <div class="field"><label>Ubicación</label><span class="input">C:\Users\oskar\Desktop\PruebaExamen</span></div>
+        <div class="field"><label>Marco (Framework)</label><span class="input combo">.NET Framework 4.8 ▾</span></div>
+        <span class="btn-mock">Atrás</span> <span class="btn-mock">Crear</span>
+      </div></div>
+    </div>
+  </div>
+
+  <h3>B) Crear CapaControlador_Reporteador</h3>
+  <ol class="steps">
+    <li>Repite lo mismo: Solución › Agregar › Nuevo proyecto… › <strong>Biblioteca de clases (.NET Framework)</strong>.</li>
+    <li>Nombre: <code>CapaControlador_Reporteador</code> · Marco: <strong>.NET Framework 4.8</strong> › Crear.</li>
+    <li>Borra su <code>Class1.cs</code>.</li>
+  </ol>
+
+  <h3>C) Crear CapaVista_Reporteador (plantilla distinta)</h3>
+  <ol class="steps">
+    <li>Solución › Agregar › Nuevo proyecto… › busca <code>controles de windows forms</code> › elige <strong>Biblioteca de controles de Windows Forms (.NET Framework)</strong> › Siguiente.</li>
+    <li>Nombre: <code>CapaVista_Reporteador</code> · Marco: <strong>.NET Framework 4.8</strong> › Crear.</li>
+    <li>Borra su <code>UserControl1.cs</code> (clic derecho › Eliminar). El botón lo creas en <a href="#rep-vista">R4</a>.</li>
+  </ol>
+
+  <div class="nota warn"><strong>Las 3 capas en .NET Framework 4.8</strong><p>Igual que <code>PruebaExamen</code>. Si alguna quedó en <strong>.NET 8</strong> (o .NET Standard), <strong>no se podrá referenciar</strong>. Cómo saberlo: si el proyecto no tiene nodo <em>Referencias</em> sino <em>Dependencias</em>, es la plantilla equivocada. Elimínalo (clic derecho › Quitar) y créalo otra vez.</p></div>
+
+  <h3>D) Referencias entre proyectos</h3>
+  <p>Para cada fila de la tabla: en el proyecto de la izquierda, clic derecho en <strong>Referencias</strong> › <strong>Agregar referencia…</strong> › a la izquierda <strong>Proyectos</strong> › <strong>Solución</strong> › marca la casilla del proyecto de la derecha › <strong>Aceptar</strong>.</p>
+
+  <div class="grid2">
+    <div>
+      <div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th>En este proyecto…</th><th>…marca</th></tr></thead>
+        <tbody>
+          <tr><td><code>CapaControlador_Reporteador</code></td><td>☑ <code>CapaModelo_Reporteador</code></td></tr>
+          <tr><td><code>CapaVista_Reporteador</code></td><td>☑ <code>CapaControlador_Reporteador</code></td></tr>
+          <tr><td><code>PruebaExamen</code></td><td>☑ <code>CapaVista_Reporteador</code></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div>
+      <div class="win"><div class="win-title">Administrador de referencias - CapaControlador_Reporteador</div><div class="win-body">
+        <div class="field"><label>Ensamblados</label><span class="input">(no tocar)</span></div>
+        <div class="field"><label>▸ Proyectos › Solución</label><span class="input">☑ CapaModelo_Reporteador</span></div>
+        <div class="field"><label></label><span class="input">☐ CapaVista_Reporteador</span></div>
+        <div class="field"><label></label><span class="input">☐ PruebaExamen</span></div>
+        <span class="btn-mock">Aceptar</span> <span class="btn-mock">Cancelar</span>
+      </div></div>
+    </div>
+  </div>
+
+  <svg viewBox="0 0 820 190" width="100%" role="img" aria-label="Referencias: PruebaExamen referencia a Vista, Vista a Controlador, Controlador a Modelo. Modelo hacia Vista está prohibido porque sería una referencia circular.">
+    <defs><marker id="flechaRb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+    <text x="410" y="16" text-anchor="middle" font-size="13" class="d-muted">La flecha sale del proyecto que USA y llega al que es usado</text>
+
+    <rect x="5" y="30" width="180" height="60" rx="10" class="d-box"/>
+    <text x="95" y="56" text-anchor="middle" font-size="15" font-weight="600" class="d-text">PruebaExamen</text>
+    <text x="95" y="78" text-anchor="middle" font-size="13" class="d-text-sm">Form1 (tu app)</text>
+    <line x1="187" y1="60" x2="209" y2="60" class="d-line" marker-end="url(#flechaRb)"/>
+
+    <rect x="211" y="30" width="180" height="60" rx="10" class="d-accent"/>
+    <text x="301" y="56" text-anchor="middle" font-size="15" font-weight="600" class="d-text">Vista</text>
+    <text x="301" y="78" text-anchor="middle" font-size="13" class="d-text-sm">BtnReporteador</text>
+    <line x1="393" y1="60" x2="415" y2="60" class="d-line" marker-end="url(#flechaRb)"/>
+
+    <rect x="417" y="30" width="180" height="60" rx="10" class="d-accent"/>
+    <text x="507" y="56" text-anchor="middle" font-size="15" font-weight="600" class="d-text">Controlador</text>
+    <text x="507" y="78" text-anchor="middle" font-size="13" class="d-text-sm">ClsControladorReporte</text>
+    <line x1="599" y1="60" x2="621" y2="60" class="d-line" marker-end="url(#flechaRb)"/>
+
+    <rect x="623" y="30" width="180" height="60" rx="10" class="d-accent"/>
+    <text x="713" y="56" text-anchor="middle" font-size="15" font-weight="600" class="d-text">Modelo</text>
+    <text x="713" y="78" text-anchor="middle" font-size="13" class="d-text-sm">ClsSentenciasReporte</text>
+
+    <!-- Prohibido: Modelo → Vista -->
+    <line x1="713" y1="92" x2="713" y2="128" class="d-bad" stroke-dasharray="6 4"/>
+    <line x1="713" y1="128" x2="301" y2="128" class="d-bad" stroke-dasharray="6 4"/>
+    <line x1="301" y1="128" x2="301" y2="94" class="d-bad" stroke-dasharray="6 4"/>
+    <circle cx="507" cy="128" r="13" class="d-bad"/>
+    <text x="507" y="133" text-anchor="middle" font-size="15" font-weight="700" class="d-text">✘</text>
+    <text x="507" y="170" text-anchor="middle" font-size="14" font-weight="600" class="d-text">Modelo → Vista: NO (referencia circular, no compila)</text>
+  </svg>
+
+  <h3>E) Instalar ReportViewer en CapaVista_Reporteador</h3>
+  <ol class="steps">
+    <li>Clic derecho en el proyecto <strong>CapaVista_Reporteador</strong> › <strong>Administrar paquetes NuGet…</strong></li>
+    <li>Pestaña <strong>Examinar</strong> › busca <code>Microsoft.ReportingServices.ReportViewerControl.Winforms</code>.</li>
+    <li>Selecciónalo › a la derecha, <strong>Versión: 150.1652.0</strong> › <strong>Instalar</strong>.</li>
+    <li><strong>Vista previa de cambios</strong> › Aceptar. <strong>Aceptación de licencia</strong> › Acepto.</li>
+    <li>Si se abre un <code>readme.htm</code> de SqlServerTypes, ciérralo.</li>
+  </ol>
+  <p>O más rápido: <strong>Herramientas</strong> › <strong>Administrador de paquetes NuGet</strong> › <strong>Consola del Administrador de paquetes</strong> y pega:</p>
+  <div class="code"><div class="code-bar"><span>Texto · Consola del Administrador de paquetes</span><button class="copy" type="button">Copiar</button></div><pre><code>Install-Package Microsoft.ReportingServices.ReportViewerControl.Winforms -Version 150.1652.0 -ProjectName CapaVista_Reporteador</code></pre></div>
+  <p>Si no hay internet y la línea anterior falla, usa tu caché como origen (misma línea + <code>-Source</code>):</p>
+  <div class="code"><div class="code-bar"><span>Texto · Consola del Administrador de paquetes (sin internet)</span><button class="copy" type="button">Copiar</button></div><pre><code>Install-Package Microsoft.ReportingServices.ReportViewerControl.Winforms -Version 150.1652.0 -ProjectName CapaVista_Reporteador -Source "C:\Users\oskar\.nuget\packages"</code></pre></div>
+
+  <div class="nota ok"><strong>El paquete ya está en tu máquina</strong><p>Tanto <code>microsoft.reportingservices.reportviewercontrol.winforms\150.1652.0</code> como su dependencia <code>microsoft.sqlserver.types\14.0.314.76</code> están en tu caché NuGet (<code>%USERPROFILE%\.nuget\packages</code>). Por eso instala en segundos, y con <code>-Source</code> funciona <strong>sin internet</strong>.</p></div>
+  <div class="nota warn"><strong>Acepta instalar Microsoft.SqlServer.Types (OBLIGATORIA)</strong><p>NuGet la instala sola como dependencia: <strong>acéptala</strong>. Es obligatoria <strong>en tiempo de ejecución, incluso para una tabla simple</strong>: sin ella, al abrir el reporte sale <code>FileNotFoundException: Microsoft.SqlServer.Types, Version=14.0.0.0</code>. La 15.0 que hay en el GAC <strong>no sirve</strong>, tiene que ser la <strong>14.0</strong>. <strong>NO borres</strong> la carpeta <code>SqlServerTypes</code> que aparece en el proyecto.</p></div>
+
+  <div class="nota info"><strong>Plan B sin NuGet: copiar 6 DLL</strong><p>Úsalo solo si NuGet falla. <strong>Copia</strong> (no muevas, no edites) las <strong>5 DLL de ReportViewer + <code>Microsoft.SqlServer.Types.dll</code></strong> del repo del curso a una carpeta tuya y referéncialas desde ahí. No hace falta <code>SqlServerSpatial140.dll</code> ni <code>LoadNativeAssemblies</code>.</p></div>
+  <ol class="steps">
+    <li>Abre PowerShell (o el Explorador de archivos) y copia las DLL a <code>C:\Users\oskar\Desktop\PruebaExamen\libs</code>:</li>
+  </ol>
+  <div class="code"><div class="code-bar"><span>Texto · PowerShell (copiar las DLL)</span><button class="copy" type="button">Copiar</button></div><pre><code>New-Item -ItemType Directory -Force "C:\Users\oskar\Desktop\PruebaExamen\libs"
+Copy-Item "C:\Users\oskar\Desktop\proyectoasis22k26\codigo\componentes\seguridad\Seguridad\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.*.dll" "C:\Users\oskar\Desktop\PruebaExamen\libs"
+Copy-Item "C:\Users\oskar\Desktop\proyectoasis22k26\codigo\componentes\seguridad\Seguridad\packages\Microsoft.SqlServer.Types.14.0.314.76\lib\net40\Microsoft.SqlServer.Types.dll" "C:\Users\oskar\Desktop\PruebaExamen\libs"</code></pre></div>
+  <ol class="steps">
+    <li>En <strong>CapaVista_Reporteador</strong>: clic derecho en <strong>Referencias</strong> › <strong>Agregar referencia…</strong> › <strong>Examinar</strong> › botón <strong>Examinar…</strong> › carpeta <code>PruebaExamen\libs</code>.</li>
+    <li>Selecciona estas 6 (con <kbd>Ctrl</kbd>+clic; ignora las <code>.resources.dll</code>): <code>Microsoft.ReportViewer.Common.dll</code>, <code>Microsoft.ReportViewer.WinForms.dll</code>, <code>Microsoft.ReportViewer.DataVisualization.dll</code>, <code>Microsoft.ReportViewer.ProcessingObjectModel.dll</code>, <code>Microsoft.ReportViewer.Design.dll</code> y <strong><code>Microsoft.SqlServer.Types.dll</code></strong> › <strong>Agregar</strong> › <strong>Aceptar</strong>.</li>
+  </ol>
+
+  <h3>F) Verifica: así deben quedar las referencias</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Proyecto</th><th>En su nodo «Referencias» debe aparecer</th></tr></thead>
+    <tbody>
+      <tr><td><code>CapaModelo_Reporteador</code></td><td>Las que trae la plantilla (<code>System</code>, <code>System.Data</code>…). Ningún proyecto.</td></tr>
+      <tr><td><code>CapaControlador_Reporteador</code></td><td><code>CapaModelo_Reporteador</code></td></tr>
+      <tr><td><code>CapaVista_Reporteador</code></td><td><code>System.Windows.Forms</code>, <code>System.Drawing</code>, <code>System.Data</code>, <strong><code>System.Xml</code></strong> (las trae la plantilla) + <code>CapaControlador_Reporteador</code> + las 5 de ReportViewer (<code>Microsoft.ReportViewer.Common</code>, <code>.WinForms</code>, <code>.DataVisualization</code>, <code>.ProcessingObjectModel</code>, <code>.Design</code>) + <strong><code>Microsoft.SqlServer.Types</code></strong></td></tr>
+      <tr><td><code>PruebaExamen</code></td><td>Lo que ya tenía (Navegador, Seguridad…) + <code>CapaVista_Reporteador</code></td></tr>
+    </tbody>
+  </table></div>
+  <div class="nota warn"><strong>¿Error CS0012 con «IXmlSerializable»?</strong><p>Si al compilar sale <em>«El tipo 'IXmlSerializable' está definido en un ensamblado al que no se hace referencia… System.Xml»</em>, a <strong>CapaVista_Reporteador</strong> le falta <code>System.Xml</code>: clic derecho en <strong>Referencias</strong> › <strong>Agregar referencia…</strong> › <strong>Ensamblados</strong> › marca <code>System.Xml</code> › <strong>Aceptar</strong>.</p></div>
+  <p>Compila la solución: <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd>. Debe decir <strong>0 errores</strong> (los proyectos aún están vacíos, es normal).</p>
+  <div class="nota ok"><strong>Verificado: compila y genera PDF</strong><p>Con estas referencias, la solución completa compiló con <strong>0 errores y 0 advertencias</strong>, y los <code>.rdlc</code> se exportaron a PDF a la primera.</p></div>
+
+  <ul class="check">
+    <li><label><input type="checkbox" data-k="r1-modelo"> Proyecto <code>CapaModelo_Reporteador</code> creado (.NET Framework 4.8, sin Class1.cs)</label></li>
+    <li><label><input type="checkbox" data-k="r1-controlador"> Proyecto <code>CapaControlador_Reporteador</code> creado (.NET Framework 4.8, sin Class1.cs)</label></li>
+    <li><label><input type="checkbox" data-k="r1-vista"> Proyecto <code>CapaVista_Reporteador</code> creado (controles de Windows Forms, sin UserControl1.cs)</label></li>
+    <li><label><input type="checkbox" data-k="r1-refs"> Referencias: Controlador → Modelo, Vista → Controlador, PruebaExamen → Vista</label></li>
+    <li><label><input type="checkbox" data-k="r1-nuget"> ReportViewer 150.1652.0 instalado en <code>CapaVista_Reporteador</code> (NuGet o Plan B)</label></li>
+    <li><label><input type="checkbox" data-k="r1-sqltypes"> <code>Microsoft.SqlServer.Types</code> 14.0 y <code>System.Xml</code> en las referencias de <code>CapaVista_Reporteador</code></label></li>
+    <li><label><input type="checkbox" data-k="r1-build"> <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> → 0 errores</label></li>
+  </ul>
+</section>
+
+<section id="rep-modelo" class="paso emerg">
+  <header class="paso-head"><span class="num">R2</span><div><h2>Capa Modelo: conexión y consultas</h2><p class="meta">⏱ 5 min · 📍 CapaModelo_Reporteador</p></div></header>
+
+  <ol class="steps">
+    <li>Clic derecho en <strong>CapaModelo_Reporteador</strong> › <strong>Agregar</strong> › <strong>Clase…</strong> › nombre <code>ClsConexion.cs</code> › <strong>Agregar</strong>.</li>
+    <li>Selecciona todo el contenido (<kbd>Ctrl</kbd>+<kbd>A</kbd>) y pega el bloque <strong>ClsConexion.cs</strong> de abajo.</li>
+    <li>Repite con <code>ClsSentenciasReporte.cs</code> y pega su bloque.</li>
+    <li>Guarda todo: <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>.</li>
+  </ol>
+
+  <h3>Qué hace cada método</h3>
+  <ul>
+    <li><code>ReporteadorFuncConectar()</code>: abre una conexión <strong>ODBC</strong> con el <strong>mismo DSN</strong> que usan Seguridad y el Navegador (<code>EmbutidosS.A</code>). No hay usuario ni contraseña en el código.</li>
+    <li><code>ReporteadorFuncObtenerTabla("tblproducto")</code>: hace <code>SELECT * FROM tblproducto</code> y devuelve un <code>DataTable</code>.</li>
+    <li><code>ReporteadorFuncEjecutarConsulta(...)</code>: ejecuta cualquier SELECT (por ejemplo, con JOIN a la categoría) y devuelve un <code>DataTable</code>. Los <code>using</code> cierran la conexión solos.</li>
+    <li><code>ReporteadorFuncObtenerRuta(n)</code>: lee <code>rutaReporte</code> de <code>tblreporte</code> usando el parámetro <code>?</code> (ODBC), para <strong>evitar inyección SQL</strong>.</li>
+  </ul>
+
+  <div class="code"><div class="code-bar"><span>C# · CapaModelo_Reporteador/ClsConexion.cs</span><button class="copy" type="button">Copiar</button></div><pre><code>using System.Data.Odbc;
+
+namespace CapaModelo_Reporteador
+{
+    // Conexión ODBC: mismo DSN que usan Seguridad y el Navegador
+    public class ClsConexion
+    {
+        private const string CadenaConexion = "Dsn=EmbutidosS.A";
+
+        public OdbcConnection ReporteadorFuncConectar()
+        {
+            OdbcConnection Conexion = new OdbcConnection(CadenaConexion);
+            Conexion.Open();
+            return Conexion;
+        }
+    }
+}</code></pre></div>
+
+  <div class="code"><div class="code-bar"><span>C# · CapaModelo_Reporteador/ClsSentenciasReporte.cs</span><button class="copy" type="button">Copiar</button></div><pre><code>using System;
+using System.Data;
+using System.Data.Odbc;
+
+namespace CapaModelo_Reporteador
+{
+    // Consultas SQL del Reporteador (solo lectura)
+    public class ClsSentenciasReporte
+    {
+        private readonly ClsConexion _Conexion = new ClsConexion();
+
+        // Todos los registros de una tabla
+        public DataTable ReporteadorFuncObtenerTabla(string Tabla)
+        {
+            return ReporteadorFuncEjecutarConsulta("SELECT * FROM " + Tabla);
+        }
+
+        // Cualquier SELECT (por ejemplo con JOIN)
+        public DataTable ReporteadorFuncEjecutarConsulta(string Consulta)
+        {
+            using (OdbcConnection Conexion = _Conexion.ReporteadorFuncConectar())
+            using (OdbcDataAdapter Adaptador = new OdbcDataAdapter(Consulta, Conexion))
+            {
+                DataTable Datos = new DataTable();
+                Adaptador.Fill(Datos);
+                return Datos;
+            }
+        }
+
+        // Ruta del .rdlc registrada en tblreporte
+        public string ReporteadorFuncObtenerRuta(int NumeroReporte)
+        {
+            using (OdbcConnection Conexion = _Conexion.ReporteadorFuncConectar())
+            using (OdbcCommand Comando = new OdbcCommand(
+                "SELECT rutaReporte FROM tblreporte WHERE numeroReporte = ?", Conexion))
+            {
+                Comando.Parameters.AddWithValue("@numero", NumeroReporte);
+                object Resultado = Comando.ExecuteScalar();
+                return Resultado == null || Resultado == DBNull.Value ? null : Resultado.ToString();
+            }
+        }
+    }
+}</code></pre></div>
+
+  <div class="nota info"><strong>¿Por qué no valida nada aquí?</strong><p>El Modelo solo <strong>ejecuta</strong>. Las reglas (tabla válida, solo SELECT, que el <code>.rdlc</code> exista) van en el <a href="#rep-controlador">Controlador</a>. Así cada capa hace una sola cosa.</p></div>
+
+  <ul class="check">
+    <li><label><input type="checkbox" data-k="r2-conexion"> <code>ClsConexion.cs</code> pegado (DSN <code>EmbutidosS.A</code>)</label></li>
+    <li><label><input type="checkbox" data-k="r2-sentencias"> <code>ClsSentenciasReporte.cs</code> pegado (3 métodos)</label></li>
+    <li><label><input type="checkbox" data-k="r2-build"> <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> → 0 errores</label></li>
+  </ul>
+</section>
+
+<section id="rep-controlador" class="paso emerg">
+  <header class="paso-head"><span class="num">R3</span><div><h2>Capa Controlador: reglas y validaciones</h2><p class="meta">⏱ 5 min · 📍 CapaControlador_Reporteador</p></div></header>
+
+  <ol class="steps">
+    <li>Confirma que <strong>CapaControlador_Reporteador › Referencias</strong> tiene <code>CapaModelo_Reporteador</code> (paso <a href="#rep-proyectos">R1</a>, parte D). Sin eso, el <code>using CapaModelo_Reporteador;</code> sale en rojo.</li>
+    <li>Clic derecho en <strong>CapaControlador_Reporteador</strong> › <strong>Agregar</strong> › <strong>Clase…</strong> › <code>ClsControladorReporte.cs</code> › <strong>Agregar</strong>.</li>
+    <li><kbd>Ctrl</kbd>+<kbd>A</kbd> y pega el bloque de abajo.</li>
+    <li>Compila: <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> → <strong>0 errores</strong>.</li>
+  </ol>
+
+  <h3>Qué valida y qué mensaje sale</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Si pasa esto…</th><th>Método</th><th>…sale este mensaje</th></tr></thead>
+    <tbody>
+      <tr><td>Nombre de tabla vacío o con espacios, <code>;</code>, <code>'</code>…</td><td><code>ReporteadorFuncDatosTabla</code></td><td><code>Nombre de tabla inválido: '…'.</code></td></tr>
+      <tr><td>La consulta no empieza con SELECT</td><td><code>ReporteadorFuncDatosConsulta</code></td><td><code>La consulta del reporte debe ser un SELECT.</code></td></tr>
+      <tr><td>Ruta vacía</td><td><code>ReporteadorFuncRutaValida</code></td><td><code>No se indicó la ruta del reporte.</code></td></tr>
+      <tr><td>El archivo no termina en <code>.rdlc</code></td><td><code>ReporteadorFuncRutaValida</code></td><td><code>El reporte debe ser un archivo .rdlc: …</code></td></tr>
+      <tr><td>El <code>.rdlc</code> no está en esa ruta</td><td><code>ReporteadorFuncRutaValida</code></td><td><code>No se encontró el reporte: …</code></td></tr>
+      <tr><td>Ese número no está en <code>tblreporte</code></td><td><code>ReporteadorFuncRutaDesdeBD</code></td><td><code>No existe el reporte número N en tblreporte.</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="nota info"><strong>¿Contra qué carpeta se resuelve la ruta relativa?</strong><p>Contra la carpeta del <code>.exe</code> (<code>AppDomain.CurrentDomain.BaseDirectory</code>), o sea <code>PruebaExamen\bin\Debug\</code>. Por eso <code>@"Reportes\RpProductos.rdlc"</code> se convierte en <code>…\PruebaExamen\bin\Debug\Reportes\RpProductos.rdlc</code>, y en <a href="#rep-rdlc">R5</a> el <code>.rdlc</code> se marca como <strong>Copiar si es posterior</strong> para que llegue ahí. El mensaje de error muestra la <strong>ruta completa</strong>: si falla, ahí ves dónde lo buscó.</p></div>
+
+  <div class="code"><div class="code-bar"><span>C# · CapaControlador_Reporteador/ClsControladorReporte.cs</span><button class="copy" type="button">Copiar</button></div><pre><code>using System;
+using System.Data;
+using System.IO;
+using System.Text.RegularExpressions;
+using CapaModelo_Reporteador;
+
+namespace CapaControlador_Reporteador
+{
+    // Reglas del Reporteador: valida lo que pide la Vista y se lo pide al Modelo
+    public class ClsControladorReporte
+    {
+        private readonly ClsSentenciasReporte _Sentencias = new ClsSentenciasReporte();
+
+        public DataTable ReporteadorFuncDatosTabla(string Tabla)
+        {
+            if (string.IsNullOrWhiteSpace(Tabla) || !Regex.IsMatch(Tabla, @"^[A-Za-z0-9_]+$"))
+                throw new ArgumentException("Nombre de tabla inválido: '" + Tabla + "'.");
+            return _Sentencias.ReporteadorFuncObtenerTabla(Tabla);
+        }
+
+        public DataTable ReporteadorFuncDatosConsulta(string Consulta)
+        {
+            if (string.IsNullOrWhiteSpace(Consulta) ||
+                !Consulta.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException("La consulta del reporte debe ser un SELECT.");
+            return _Sentencias.ReporteadorFuncEjecutarConsulta(Consulta);
+        }
+
+        public string ReporteadorFuncRutaValida(string Ruta)
+        {
+            if (string.IsNullOrWhiteSpace(Ruta))
+                throw new ArgumentException("No se indicó la ruta del reporte.");
+            string Completa = Path.IsPathRooted(Ruta)
+                ? Ruta
+                : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Ruta);
+            if (!Completa.EndsWith(".rdlc", StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException("El reporte debe ser un archivo .rdlc: " + Completa);
+            if (!File.Exists(Completa))
+                throw new FileNotFoundException("No se encontró el reporte: " + Completa);
+            return Completa;
+        }
+
+        public string ReporteadorFuncRutaDesdeBD(int NumeroReporte)
+        {
+            string Ruta = _Sentencias.ReporteadorFuncObtenerRuta(NumeroReporte);
+            if (Ruta == null)
+                throw new InvalidOperationException("No existe el reporte número " + NumeroReporte + " en tblreporte.");
+            return ReporteadorFuncRutaValida(Ruta);
+        }
+    }
+}</code></pre></div>
+
+  <div class="nota ok"><strong>Listo: Modelo y Controlador terminados</strong><p><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> debe dar <strong>0 errores</strong>. Si sale <em>«El tipo o el nombre del espacio de nombres 'CapaModelo_Reporteador' no existe»</em>, falta la referencia Controlador → Modelo (<a href="#rep-proyectos">R1 D</a>).</p></div>
+
+  <ul class="check">
+    <li><label><input type="checkbox" data-k="r3-ref"> <code>CapaControlador_Reporteador</code> referencia a <code>CapaModelo_Reporteador</code></label></li>
+    <li><label><input type="checkbox" data-k="r3-clase"> <code>ClsControladorReporte.cs</code> pegado (4 métodos)</label></li>
+    <li><label><input type="checkbox" data-k="r3-build"> <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> → 0 errores</label></li>
+  </ul>
+
+  <p><a href="#rep-vista"><strong>Siguiente: la Vista →</strong></a></p>
+</section>

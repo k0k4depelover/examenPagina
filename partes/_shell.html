@@ -81,6 +81,13 @@ img{max-width:100%}
 
 /* Secciones */
 .paso{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 26px;margin:0 0 26px;scroll-margin-top:78px;box-shadow:var(--shadow)}
+.paso.emerg{border:2px solid var(--danger);box-shadow:0 0 0 4px var(--danger-soft),var(--shadow)}
+.paso.emerg .num{background:var(--danger);color:var(--card);font-size:17px}
+.emerg-banner{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;background:var(--danger-soft);border:2px solid var(--danger);border-radius:14px;padding:14px 18px;margin-bottom:22px}
+.emerg-banner b{color:var(--danger);font-size:1.05rem}
+.emerg-banner a{background:var(--danger);color:var(--card);text-decoration:none;font-weight:700;border-radius:8px;padding:7px 14px}
+.toc h4.emerg-h{color:var(--danger)}
+.toc a.emerg span{background:var(--danger-soft);border-color:var(--danger);color:var(--danger)}
 @media (max-width:600px){.paso{padding:18px 16px}}
 .paso-head{display:flex;gap:14px;align-items:center;margin-bottom:14px}
 .num{flex:none;width:46px;height:46px;border-radius:50%;background:var(--accent);color:var(--accent-text);display:grid;place-items:center;font-weight:800;font-size:20px}
@@ -102,6 +109,7 @@ ul:not(.check){padding-left:1.3em}
 .copy.done{background:var(--ok);color:#fff}
 .code pre{margin:0;padding:14px 16px;overflow-x:auto;color:var(--code-text);font:13px/1.55 ui-monospace,"Cascadia Code",Consolas,"Courier New",monospace;tab-size:4}
 .code code{font:inherit}
+.code.xml pre{max-height:420px;overflow:auto}
 .tk-k{color:#f5a3c0;font-weight:600}.tk-s{color:#a6e3a1}.tk-c{color:#8f889a;font-style:italic}.tk-n{color:#fab387}.tk-v{color:#f9e2af}.tk-a{color:#94e2d5}.tk-f{color:#89b4fa}
 :not(pre)>code{background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:1px 5px;font:0.88em ui-monospace,Consolas,monospace}
 kbd{display:inline-block;background:var(--card2);border:1px solid var(--border);border-bottom-width:3px;border-radius:6px;padding:0 6px;font:600 0.82em ui-monospace,Consolas,monospace;line-height:1.6}
@@ -199,6 +207,16 @@ details.qa>div{padding:8px 14px 12px}
 <div class="layout">
   <aside class="toc" aria-label="Índice">
     <nav id="indice">
+      <h4 class="emerg-h">🚨 Emergencia: Reporteador</h4>
+      <a class="emerg" href="#rep-resumen"><span>!</span>Resumen y arquitectura</a>
+      <a class="emerg" href="#rep-proyectos"><span>R1</span>Crear los 3 proyectos</a>
+      <a class="emerg" href="#rep-modelo"><span>R2</span>Capa Modelo</a>
+      <a class="emerg" href="#rep-controlador"><span>R3</span>Capa Controlador</a>
+      <a class="emerg" href="#rep-vista"><span>R4</span>Capa Vista (botón)</a>
+      <a class="emerg" href="#rep-rdlc"><span>R5</span>El reporte .rdlc</a>
+      <a class="emerg" href="#rep-form1"><span>R6</span>Form1 y probar</a>
+      <a class="emerg" href="#rep-extras"><span>R7</span>Extras (Imprimir, JOIN…)</a>
+      <a class="emerg" href="#rep-errores"><span>R8</span>Errores del reporte</a>
       <h4>Preparación</h4>
       <a href="#inicio"><span>★</span>Resumen</a>
       <a href="#paso1"><span>1</span>Crear las tablas</a>
@@ -224,11 +242,17 @@ details.qa>div{padding:8px 14px 12px}
   <main>
     <details class="toc-mobile"><summary>☰ Índice de la guía</summary><nav id="indice-movil"></nav></details>
 
+    <div class="emerg-banner"><b>🚨 EMERGENCIA · Reporteador en 3 capas (RDLC)</b><span>Un botón que carga reportes, en Vista–Controlador–Modelo, listo en 1 hora.</span><a href="#rep-resumen">Ir ahora →</a></div>
+
     <div class="hero">
       <h1>CRUD con el Navegador, paso a paso</h1>
       <p>Partes de lo que ya tienes: <code style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff">navegador2.NavegadorMetConfigurar("tblempleado", 4, 5);</code> compilando. Al final tendrás un CRUD de productos registrado en Seguridad, con login, permisos por rol y bitácora, listo para demostrar.</p>
       <div class="chips"><span>⏱ ≈ 1 hora</span><span>🗄 MySQL · DSN EmbutidosS.A</span><span>🧩 CapaVista_Navegador.dll</span><span>🔐 Seguridad por rol</span></div>
     </div>
+
+<!--PARTER1-->
+
+<!--PARTER2-->
 
 <!--PARTE1-->
 

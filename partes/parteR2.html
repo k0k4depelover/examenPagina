@@ -1,0 +1,611 @@
+<section id="rep-vista" class="paso emerg">
+  <header class="paso-head"><span class="num">R4</span><div><h2>Capa Vista: el botón y la ventana del reporte</h2><p class="meta">⏱ 10 min · 📍 CapaVista_Reporteador</p></div></header>
+
+  <p>La Vista tiene <strong>2 archivos</strong>. Los dos se crean <strong>solo con código</strong>: no arrastras nada en ningún diseñador.</p>
+  <div class="grid2">
+    <div>
+      <h3>BtnReporteador.cs</h3>
+      <p>El <strong>control</strong> (un botón «Reporte») que luego arrastras a <code>Form1</code>, igual que hiciste con el Navegador. Se configura en <strong>una línea</strong>.</p>
+    </div>
+    <div>
+      <h3>FrmVisorReporte.cs</h3>
+      <p>La <strong>ventana</strong> que se abre al hacer clic. Dentro tiene un <code>ReportViewer</code> (el visor del NuGet) que dibuja el <code>.rdlc</code> con los datos.</p>
+    </div>
+  </div>
+
+  <h3>1. Crear el botón: BtnReporteador</h3>
+  <ol class="steps">
+    <li>En el <strong>Explorador de soluciones</strong>: clic derecho en <code>CapaVista_Reporteador</code> › <strong>Agregar</strong> › <strong>Control de usuario (Windows Forms)…</strong></li>
+    <li>Nombre: <code>BtnReporteador.cs</code> › <span class="btn-mock">Agregar</span>. Se abre un cuadro gris vacío (el diseñador). <strong>No arrastres nada ahí</strong>: el botón se crea por código.</li>
+    <li>Pulsa <kbd>F7</kbd> (Ver código). Se abre <code>BtnReporteador.cs</code>.</li>
+    <li>Selecciona todo (<kbd>Ctrl</kbd>+<kbd>A</kbd>), bórralo y pega el código de abajo. Guarda con <kbd>Ctrl</kbd>+<kbd>S</kbd>.</li>
+    <li><strong>No borres</strong> <code>BtnReporteador.Designer.cs</code> (el archivo que cuelga debajo): ahí vive <code>InitializeComponent()</code>, que el código llama.</li>
+  </ol>
+
+  <div class="code"><div class="code-bar"><span>C# · CapaVista_Reporteador/BtnReporteador.cs</span><button class="copy" type="button">Copiar</button></div><pre><code>using System;
+using System.Data;
+using System.Drawing;
+using System.Windows.Forms;
+using CapaControlador_Reporteador;
+
+namespace CapaVista_Reporteador
+{
+    // Control del Reporteador: un botón que se arrastra a cualquier formulario
+    // y se configura en una línea (igual que el Navegador).
+    public partial class BtnReporteador : UserControl
+    {
+        private readonly Button _Boton = new Button();
+        private readonly ClsControladorReporte _Controlador = new ClsControladorReporte();
+        private string _Tabla;
+        private string _Consulta;
+        private string _RutaReporte;
+        private int _NumeroReporte;
+        private string _NombreDataSet = "DsReporte";
+
+        public BtnReporteador()
+        {
+            InitializeComponent();
+
+            _Boton.Text = "Reporte";
+            _Boton.Dock = DockStyle.Fill;
+            _Boton.FlatStyle = FlatStyle.Flat;
+            _Boton.BackColor = Color.FromArgb(91, 15, 21);
+            _Boton.ForeColor = Color.White;
+            _Boton.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            _Boton.Click += (Remitente, Evento) =&gt; ReporteadorMetMostrar();
+            Controls.Add(_Boton);
+            Size = new Size(120, 45);
+        }
+
+        // Tabla + ruta del .rdlc (si la ruta va vacía, el botón pide elegir el archivo)
+        public void ReporteadorMetConfigurar(string Tabla, string RutaReporte, string NombreDataSet = "DsReporte")
+        {
+            _Tabla = Tabla;
+            _Consulta = null;
+            _RutaReporte = RutaReporte;
+            _NumeroReporte = 0;
+            _NombreDataSet = NombreDataSet;
+        }
+
+        // Un SELECT propio (por ejemplo con JOIN) + ruta del .rdlc
+        public void ReporteadorMetConfigurarConsulta(string ConsultaSelect, string RutaReporte, string NombreDataSet = "DsReporte")
+        {
+            _Tabla = null;
+            _Consulta = ConsultaSelect;
+            _RutaReporte = RutaReporte;
+            _NumeroReporte = 0;
+            _NombreDataSet = NombreDataSet;
+        }
+
+        // Tabla + número de reporte registrado en tblreporte (la ruta sale de la BD)
+        public void ReporteadorMetConfigurarDesdeBD(string Tabla, int NumeroReporte, string NombreDataSet = "DsReporte")
+        {
+            _Tabla = Tabla;
+            _Consulta = null;
+            _RutaReporte = null;
+            _NumeroReporte = NumeroReporte;
+            _NombreDataSet = NombreDataSet;
+        }
+
+        // Carga y muestra el reporte (lo usa el clic y también se puede llamar desde el formulario)
+        public void ReporteadorMetMostrar()
+        {
+            try
+            {
+                string Ruta;
+                if (_NumeroReporte &gt; 0)
+                    Ruta = _Controlador.ReporteadorFuncRutaDesdeBD(_NumeroReporte);
+                else if (!string.IsNullOrWhiteSpace(_RutaReporte))
+                    Ruta = _Controlador.ReporteadorFuncRutaValida(_RutaReporte);
+                else
+                {
+                    string Elegida = ReporteadorFuncElegirArchivo();
+                    if (Elegida == null) return;   // canceló
+                    Ruta = _Controlador.ReporteadorFuncRutaValida(Elegida);
+                }
+
+                DataTable Datos = _Consulta != null
+                    ? _Controlador.ReporteadorFuncDatosConsulta(_Consulta)
+                    : _Controlador.ReporteadorFuncDatosTabla(_Tabla);
+
+                using (FrmVisorReporte Visor = new FrmVisorReporte(
+                    "Reporte - " + (_Tabla ?? "consulta"), Ruta, _NombreDataSet, Datos))
+                {
+                    Visor.ShowDialog(FindForm());
+                }
+            }
+            catch (Exception Excepcion)
+            {
+                MessageBox.Show("No se pudo cargar el reporte.\n\n" + Excepcion.Message,
+                    "Reporteador", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private string ReporteadorFuncElegirArchivo()
+        {
+            using (OpenFileDialog Dialogo = new OpenFileDialog())
+            {
+                Dialogo.Title = "Seleccione un reporte";
+                Dialogo.Filter = "Reportes RDLC (*.rdlc)|*.rdlc";
+                return Dialogo.ShowDialog() == DialogResult.OK ? Dialogo.FileName : null;
+            }
+        }
+    }
+}</code></pre></div>
+
+  <h3>2. Crear la ventana: FrmVisorReporte</h3>
+  <ol class="steps">
+    <li>Clic derecho en <code>CapaVista_Reporteador</code> › <strong>Agregar</strong> › <strong>Clase…</strong></li>
+    <li>Nombre: <code>FrmVisorReporte.cs</code> › <span class="btn-mock">Agregar</span>.</li>
+    <li>Borra todo lo que trae (<kbd>Ctrl</kbd>+<kbd>A</kbd>, <kbd>Supr</kbd>) y pega el código de abajo. Guarda.</li>
+    <li>Es una <strong>clase que hereda de <code>Form</code></strong>: el <code>ReportViewer</code> se crea por código, <strong>no</strong> hace falta ponerlo desde el Cuadro de herramientas. Si luego le das doble clic y se abre un diseñador vacío, ciérralo; para ver el código usa clic derecho › <strong>Ver código</strong> (<kbd>F7</kbd>).</li>
+  </ol>
+
+  <div class="code"><div class="code-bar"><span>C# · CapaVista_Reporteador/FrmVisorReporte.cs</span><button class="copy" type="button">Copiar</button></div><pre><code>using System.Data;
+using System.Windows.Forms;
+using Microsoft.Reporting.WinForms;
+
+namespace CapaVista_Reporteador
+{
+    // Ventana que muestra el .rdlc con los datos (ReportViewer creado por código)
+    public class FrmVisorReporte : Form
+    {
+        private readonly ReportViewer _Visor = new ReportViewer();
+
+        public FrmVisorReporte(string Titulo, string RutaRdlc, string NombreDataSet, DataTable Datos)
+        {
+            Text = Titulo;
+            Width = 1000;
+            Height = 700;
+            StartPosition = FormStartPosition.CenterParent;
+
+            _Visor.Dock = DockStyle.Fill;
+            _Visor.ProcessingMode = ProcessingMode.Local;
+            _Visor.LocalReport.ReportPath = RutaRdlc;
+            _Visor.LocalReport.DataSources.Clear();
+            _Visor.LocalReport.DataSources.Add(new ReportDataSource(NombreDataSet, Datos));
+            Controls.Add(_Visor);
+
+            Load += (Remitente, Evento) =&gt; _Visor.RefreshReport();
+        }
+    }
+}</code></pre></div>
+
+  <h3>La API del botón (lo que llamas desde Form1)</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Método</th><th>Cuándo usarlo</th><th>Ejemplo</th></tr></thead>
+    <tbody>
+      <tr><td><code>ReporteadorMetConfigurar(tabla, rutaRdlc[, dataSet])</code></td><td><strong>Uso normal.</strong> Muestra todos los registros de una tabla con ese <code>.rdlc</code>.</td><td><code>btnReporteador1.ReporteadorMetConfigurar("tblproducto", @"Reportes\RpProductos.rdlc");</code></td></tr>
+      <tr><td><code>ReporteadorMetConfigurar(tabla, "")</code></td><td><strong>«Cargar reportes»</strong>: con la ruta vacía, al hacer clic se abre un diálogo para <strong>elegir cualquier .rdlc</strong>.</td><td><code>btnReporteador1.ReporteadorMetConfigurar("tblproducto", "");</code></td></tr>
+      <tr><td><code>ReporteadorMetConfigurarConsulta(select, rutaRdlc)</code></td><td>Tu propio <code>SELECT</code> (un JOIN, un <code>WHERE</code>). Solo se aceptan consultas <code>SELECT</code>.</td><td>ver <a href="#rep-extras">R7 b</a></td></tr>
+      <tr><td><code>ReporteadorMetConfigurarDesdeBD(tabla, numeroReporte)</code></td><td>La ruta del <code>.rdlc</code> sale de <code>tblreporte</code> (el catálogo de reportes).</td><td><code>btnReporteador1.ReporteadorMetConfigurarDesdeBD("tblproducto", 1);</code></td></tr>
+      <tr><td><code>ReporteadorMetMostrar()</code></td><td>Abre el reporte <strong>desde código</strong>, sin clic (por ejemplo desde el botón Imprimir del Navegador).</td><td><code>btnReporteador1.ReporteadorMetMostrar();</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Qué pasa cuando haces clic</h3>
+  <svg viewBox="0 0 820 470" width="100%" role="img" aria-label="Flujo del clic en el botón Reporte: si hay número de reporte la ruta sale de tblreporte; si no, se valida la ruta configurada; si no hay ruta se abre un diálogo para elegir el archivo rdlc. Luego el Controlador obtiene el DataTable, FrmVisorReporte carga el rdlc con el origen DsReporte y ejecuta RefreshReport. Cualquier error muestra el mensaje No se pudo cargar el reporte con el motivo.">
+    <defs><marker id="flechaSa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+
+    <!-- Fila 1 -->
+    <rect x="10" y="20" width="180" height="56" rx="10" class="d-box"/>
+    <text x="100" y="44" text-anchor="middle" font-size="15" font-weight="600" class="d-text">Clic en «Reporte»</text>
+    <text x="100" y="64" text-anchor="middle" font-size="12" class="d-text-sm">ReporteadorMetMostrar()</text>
+    <line x1="192" y1="48" x2="226" y2="48" class="d-line" marker-end="url(#flechaSa)"/>
+
+    <rect x="230" y="20" width="220" height="56" rx="10" class="d-accent"/>
+    <text x="340" y="44" text-anchor="middle" font-size="14" font-weight="600" class="d-text">¿NumeroReporte &gt; 0?</text>
+    <text x="340" y="64" text-anchor="middle" font-size="12" class="d-text-sm">¿configurado DesdeBD?</text>
+    <line x1="452" y1="48" x2="496" y2="48" class="d-line" marker-end="url(#flechaSa)"/>
+    <text x="474" y="40" text-anchor="middle" font-size="13" class="d-muted">Sí</text>
+
+    <rect x="500" y="20" width="240" height="56" rx="10" class="d-box"/>
+    <text x="620" y="44" text-anchor="middle" font-size="14" font-weight="600" class="d-text">Ruta desde tblreporte</text>
+    <text x="620" y="64" text-anchor="middle" font-size="12" class="d-text-sm">ReporteadorFuncRutaDesdeBD(n)</text>
+
+    <!-- Fila 2 -->
+    <line x1="340" y1="78" x2="340" y2="106" class="d-line" marker-end="url(#flechaSa)"/>
+    <text x="350" y="97" font-size="13" class="d-muted">No</text>
+
+    <rect x="230" y="110" width="220" height="56" rx="10" class="d-accent"/>
+    <text x="340" y="134" text-anchor="middle" font-size="14" font-weight="600" class="d-text">¿Hay ruta configurada?</text>
+    <text x="340" y="154" text-anchor="middle" font-size="12" class="d-text-sm">rutaRdlc distinta de ""</text>
+    <line x1="452" y1="138" x2="496" y2="138" class="d-line" marker-end="url(#flechaSa)"/>
+    <text x="474" y="130" text-anchor="middle" font-size="13" class="d-muted">Sí</text>
+
+    <rect x="500" y="110" width="240" height="56" rx="10" class="d-box"/>
+    <text x="620" y="134" text-anchor="middle" font-size="14" font-weight="600" class="d-text">Validar la ruta</text>
+    <text x="620" y="154" text-anchor="middle" font-size="12" class="d-text-sm">ReporteadorFuncRutaValida()</text>
+
+    <!-- Fila 3 -->
+    <line x1="340" y1="168" x2="340" y2="196" class="d-line" marker-end="url(#flechaSa)"/>
+    <text x="350" y="187" font-size="13" class="d-muted">No</text>
+
+    <rect x="230" y="200" width="220" height="56" rx="10" class="d-box"/>
+    <text x="340" y="224" text-anchor="middle" font-size="14" font-weight="600" class="d-text">Elegir archivo .rdlc</text>
+    <text x="340" y="244" text-anchor="middle" font-size="12" class="d-text-sm">OpenFileDialog</text>
+    <line x1="228" y1="228" x2="194" y2="228" class="d-line" marker-end="url(#flechaSa)"/>
+
+    <rect x="10" y="200" width="180" height="56" rx="10" class="d-box"/>
+    <text x="100" y="224" text-anchor="middle" font-size="13" font-weight="600" class="d-text">Canceló → no pasa nada</text>
+    <text x="100" y="244" text-anchor="middle" font-size="12" class="d-text-sm">(return, sin error)</text>
+
+    <path d="M452,228 H620 V169" fill="none" class="d-line" marker-end="url(#flechaSa)"/>
+    <text x="536" y="220" text-anchor="middle" font-size="13" class="d-muted">Aceptar</text>
+
+    <!-- Bus hacia la fila 4 -->
+    <path d="M742,48 H790 V282 H130 V297" fill="none" class="d-line" marker-end="url(#flechaSa)"/>
+    <path d="M742,138 H790" fill="none" class="d-line"/>
+    <text x="600" y="276" text-anchor="middle" font-size="13" class="d-muted">ruta válida ✓</text>
+
+    <!-- Fila 4 -->
+    <rect x="10" y="300" width="240" height="62" rx="10" class="d-box"/>
+    <text x="130" y="326" text-anchor="middle" font-size="14" font-weight="600" class="d-text">Controlador → DataTable</text>
+    <text x="130" y="347" text-anchor="middle" font-size="12" class="d-text-sm">DatosTabla() o DatosConsulta()</text>
+    <line x1="252" y1="331" x2="286" y2="331" class="d-line" marker-end="url(#flechaSa)"/>
+
+    <rect x="290" y="300" width="240" height="62" rx="10" class="d-accent"/>
+    <text x="410" y="326" text-anchor="middle" font-size="14" font-weight="600" class="d-text">FrmVisorReporte</text>
+    <text x="410" y="347" text-anchor="middle" font-size="12" class="d-text-sm">ReportPath + «DsReporte»</text>
+    <line x1="532" y1="331" x2="566" y2="331" class="d-line" marker-end="url(#flechaSa)"/>
+
+    <rect x="570" y="300" width="240" height="62" rx="10" class="d-ok"/>
+    <text x="690" y="326" text-anchor="middle" font-size="14" font-weight="600" class="d-text">RefreshReport()</text>
+    <text x="690" y="347" text-anchor="middle" font-size="12" class="d-text-sm">el reporte se muestra ✓</text>
+
+    <!-- Error -->
+    <line x1="410" y1="364" x2="410" y2="394" class="d-line" stroke-dasharray="5 4" marker-end="url(#flechaSa)"/>
+    <text x="420" y="384" font-size="13" class="d-muted">catch</text>
+    <rect x="10" y="398" width="800" height="58" rx="10" class="d-bad"/>
+    <text x="410" y="422" text-anchor="middle" font-size="14" font-weight="600" class="d-text">Si algo falla en cualquier paso → MessageBox de error</text>
+    <text x="410" y="443" text-anchor="middle" font-size="12" class="d-text-sm">«No se pudo cargar el reporte.» + el motivo (Excepcion.Message)</text>
+  </svg>
+
+  <div class="nota danger"><strong>«DsReporte» tiene que ser IDÉNTICO en los dos lados</strong><p>El nombre que el código le da a los datos (<code>"DsReporte"</code>, en <code>new ReportDataSource(NombreDataSet, Datos)</code>) debe ser <strong>exactamente</strong> el mismo que el del <code>.rdlc</code>: <code>&lt;DataSet Name="DsReporte"&gt;</code> (mayúsculas incluidas). Si no coinciden sale: <em>A data source instance has not been supplied for the data source 'X'</em>.</p></div>
+
+  <h3>3. Compilar la Vista</h3>
+  <ol class="steps">
+    <li>Clic derecho en <code>CapaVista_Reporteador</code> › <strong>Compilar</strong>. Compila también el Controlador y el Modelo (porque están referenciados).</li>
+    <li>En <strong>Salida</strong> debe decir <code>Compilación: 4 correctos, 0 incorrectos</code> (PruebaExamen + las 3 capas; lo importante es <strong>0 incorrectos</strong>). Si hay errores, mira <a href="#rep-errores">R8</a>.</li>
+    <li>Tras compilar, <code>BtnReporteador</code> aparece solo en el <strong>Cuadro de herramientas</strong>, en el grupo <strong>«Componentes de CapaVista_Reporteador»</strong> (lo vas a usar en <a href="#rep-form1">R6</a>).</li>
+  </ol>
+  <div class="nota info"><strong>¿No aparece en el Cuadro de herramientas?</strong><p>Clic derecho en el Cuadro de herramientas › <strong>Elegir elementos…</strong> › <span class="btn-mock">Examinar…</span> › <code>CapaVista_Reporteador\bin\Debug\CapaVista_Reporteador.dll</code> › marca <code>BtnReporteador</code> › <span class="btn-mock">Aceptar</span>. Es lo mismo que hiciste con el Navegador.</p></div>
+
+  <div class="win"><div class="win-title">Explorador de soluciones (así debe quedar la Vista)</div><div class="win-body">
+    <div>📁 <strong>CapaVista_Reporteador</strong></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;📚 Referencias → <code>CapaControlador_Reporteador</code>, <code>Microsoft.ReportViewer.WinForms</code>…</div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;🧩 <strong>BtnReporteador.cs</strong></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└ BtnReporteador.Designer.cs <small>(no lo toques)</small></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;🪟 <strong>FrmVisorReporte.cs</strong></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;📄 packages.config</div>
+  </div></div>
+</section>
+
+<section id="rep-rdlc" class="paso emerg">
+  <header class="paso-head"><span class="num">R5</span><div><h2>El reporte .rdlc (el diseño de la hoja)</h2><p class="meta">⏱ 8 min · 📍 PruebaExamen › carpeta Reportes</p></div></header>
+
+  <p>Un <code>.rdlc</code> es un <strong>archivo XML</strong> que describe cómo se ve la hoja: qué <strong>campos</strong> recibe (el <em>DataSet</em>), la <strong>tabla</strong> del cuerpo (la <em>Tablix</em>) y el <strong>encabezado/pie</strong>. Los datos <strong>no</strong> están dentro: se los pasa el código (el <code>DataTable</code> del Controlador) al abrirlo.</p>
+
+  <svg viewBox="0 0 820 360" width="100%" role="img" aria-label="Anatomía de un rdlc: a la izquierda el DataSet DsReporte con sus campos, que son las columnas del SELECT; a la derecha la hoja con encabezado, la Tablix con fila de encabezados y fila de detalle con expresiones Fields, y el pie con el número de página.">
+    <defs><marker id="flechaSb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker></defs>
+
+    <!-- DataSet -->
+    <rect x="10" y="20" width="250" height="320" rx="10" class="d-box"/>
+    <text x="135" y="48" text-anchor="middle" font-size="15" font-weight="600" class="d-text">DataSet «DsReporte»</text>
+    <text x="135" y="68" text-anchor="middle" font-size="12" class="d-text-sm">campos = columnas del SELECT</text>
+    <rect x="30" y="84" width="210" height="30" rx="6" class="d-accent"/>
+    <text x="135" y="104" text-anchor="middle" font-size="13" class="d-text">idProducto</text>
+    <rect x="30" y="122" width="210" height="30" rx="6" class="d-accent"/>
+    <text x="135" y="142" text-anchor="middle" font-size="13" class="d-text">idCategoria</text>
+    <rect x="30" y="160" width="210" height="30" rx="6" class="d-accent"/>
+    <text x="135" y="180" text-anchor="middle" font-size="13" class="d-text">nombreProducto</text>
+    <rect x="30" y="198" width="210" height="30" rx="6" class="d-accent"/>
+    <text x="135" y="218" text-anchor="middle" font-size="13" class="d-text">precioProducto</text>
+    <rect x="30" y="236" width="210" height="30" rx="6" class="d-accent"/>
+    <text x="135" y="256" text-anchor="middle" font-size="13" class="d-text">fechaVencimiento</text>
+    <rect x="30" y="274" width="210" height="30" rx="6" class="d-accent"/>
+    <text x="135" y="294" text-anchor="middle" font-size="13" class="d-text">is_active</text>
+    <text x="135" y="326" text-anchor="middle" font-size="12" class="d-muted">&lt;Fields&gt; en el XML</text>
+
+    <line x1="262" y1="186" x2="312" y2="186" class="d-line" marker-end="url(#flechaSb)"/>
+
+    <!-- Hoja -->
+    <rect x="300" y="20" width="510" height="320" rx="10" class="d-box"/>
+    <text x="316" y="44" font-size="13" class="d-muted">Hoja del reporte (lo que se imprime)</text>
+
+    <rect x="316" y="54" width="478" height="50" rx="6" class="d-box"/>
+    <text x="555" y="76" text-anchor="middle" font-size="15" font-weight="600" class="d-text">Reporte de productos</text>
+    <text x="555" y="95" text-anchor="middle" font-size="12" class="d-text-sm">Embutidos de Calidad S.A. · Generado: dd/MM/yyyy HH:mm</text>
+
+    <text x="316" y="128" font-size="13" class="d-muted">Tablix: encabezado vino/blanco, se repite en cada página</text>
+    <rect x="316" y="138" width="159" height="32" class="d-accent"/>
+    <rect x="475" y="138" width="159" height="32" class="d-accent"/>
+    <rect x="634" y="138" width="160" height="32" class="d-accent"/>
+    <text x="395" y="159" text-anchor="middle" font-size="13" font-weight="600" class="d-text">ID</text>
+    <text x="554" y="159" text-anchor="middle" font-size="13" font-weight="600" class="d-text">Producto</text>
+    <text x="714" y="159" text-anchor="middle" font-size="13" font-weight="600" class="d-text">Precio (Q)</text>
+    <rect x="316" y="170" width="159" height="32" class="d-box"/>
+    <rect x="475" y="170" width="159" height="32" class="d-box"/>
+    <rect x="634" y="170" width="160" height="32" class="d-box"/>
+    <text x="395" y="191" text-anchor="middle" font-size="12" class="d-text-sm">=Fields!idProducto</text>
+    <text x="554" y="191" text-anchor="middle" font-size="12" class="d-text-sm">=Fields!nombreProducto</text>
+    <text x="714" y="191" text-anchor="middle" font-size="12" class="d-text-sm">=Fields!precioProducto</text>
+    <text x="316" y="222" font-size="12" class="d-text-sm">Fila de detalle: se repite 1 vez por cada fila del DataTable</text>
+    <text x="316" y="240" font-size="12" class="d-muted">(aquí se dibujan 3 de las 6 columnas; cada una termina en .Value)</text>
+
+    <rect x="316" y="258" width="478" height="44" rx="6" class="d-box"/>
+    <text x="555" y="285" text-anchor="middle" font-size="13" class="d-text">Pie: Página =Globals!PageNumber de =Globals!TotalPages</text>
+    <text x="555" y="326" text-anchor="middle" font-size="12" class="d-muted">título + Tablix en &lt;Body&gt; · pie en &lt;PageFooter&gt;</text>
+  </svg>
+
+  <h3>Agregar el .rdlc al proyecto PruebaExamen</h3>
+  <div class="grid2">
+    <div>
+      <p><strong>Opción A (rápida): usar el archivo ya hecho</strong></p>
+      <ol class="steps">
+        <li>Descárgalo si no lo tienes: <a href="archivos/RpProductos.rdlc" download>RpProductos.rdlc</a>.</li>
+        <li>En <code>PruebaExamen</code>: clic derecho › <strong>Agregar</strong> › <strong>Nueva carpeta</strong> › nómbrala <code>Reportes</code>.</li>
+        <li>Clic derecho en <code>Reportes</code> › <strong>Agregar</strong> › <strong>Elemento existente…</strong></li>
+        <li>Abajo a la derecha cambia el filtro a <span class="input combo">Todos los archivos (*.*) ▾</span>.</li>
+        <li>Elige <code>C:\Users\oskar\Desktop\examenPaginaUrgente\archivos\RpProductos.rdlc</code> › <span class="btn-mock">Agregar</span> (Visual Studio lo copia dentro de <code>Reportes</code>).</li>
+      </ol>
+    </div>
+    <div>
+      <p><strong>Opción B: pegar el XML</strong></p>
+      <ol class="steps">
+        <li>Crea la carpeta <code>Reportes</code> (igual que en A).</li>
+        <li>Clic derecho en <code>Reportes</code> › <strong>Agregar</strong> › <strong>Nuevo elemento…</strong> › busca <strong>«Archivo XML»</strong>.</li>
+        <li>Nombre: <code>RpProductos.rdlc</code> (con esa extensión) › <span class="btn-mock">Agregar</span>.</li>
+        <li><kbd>Ctrl</kbd>+<kbd>A</kbd>, borra la línea <code>&lt;?xml …?&gt;</code> que trae y pega el XML completo de abajo. Guarda.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h3>MUY IMPORTANTE: propiedades del .rdlc (<kbd>F4</kbd>)</h3>
+  <div class="grid2">
+    <div>
+      <ol class="steps">
+        <li>Clic <strong>una vez</strong> sobre <code>RpProductos.rdlc</code> en el Explorador de soluciones.</li>
+        <li>Pulsa <kbd>F4</kbd> (ventana Propiedades).</li>
+        <li><strong>Acción de compilación</strong> = <code>Contenido</code>.</li>
+        <li><strong>Copiar en el directorio de salida</strong> = <code>Copiar si es posterior</code>.</li>
+        <li>Así, al compilar, el archivo queda en <code>PruebaExamen\bin\Debug\Reportes\RpProductos.rdlc</code>, que es donde lo busca la ruta <code>@"Reportes\RpProductos.rdlc"</code>.</li>
+      </ol>
+    </div>
+    <div>
+      <div class="win"><div class="win-title">Propiedades · RpProductos.rdlc</div><div class="win-body">
+        <div class="field"><label>Acción de compilación</label><span class="input combo">Contenido ▾</span></div>
+        <div class="field"><label>Copiar en el directorio de salida</label><span class="input combo">Copiar si es posterior ▾</span></div>
+        <div class="field"><label>Herramienta personalizada</label><span class="input"></span></div>
+        <div class="field"><label>Nombre de archivo</label><span class="input">RpProductos.rdlc</span></div>
+      </div></div>
+    </div>
+  </div>
+  <div class="nota danger"><strong>Si lo dejas en «Recurso incrustado» o «No copiar»</strong><p>El archivo no llega a <code>bin\Debug</code> y al hacer clic sale: <em>No se encontró el reporte: …\bin\Debug\Reportes\RpProductos.rdlc</em>. Arregla las 2 propiedades y vuelve a compilar.</p></div>
+
+  <h3>XML completo de RpProductos.rdlc</h3>
+  <p>Descarga directa: <a href="archivos/RpProductos.rdlc" download>RpProductos.rdlc</a>. Columnas: ID, Categoría, Producto, Precio (Q), Vence, Activo.</p>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Lo que trae el .rdlc</th><th>Detalle</th></tr></thead>
+    <tbody>
+      <tr><td>DataSet</td><td><code>DsReporte</code> (igual que en el código).</td></tr>
+      <tr><td>Arriba de la tabla (en el cuerpo)</td><td>Título «Reporte de productos», subtítulo «Embutidos de Calidad S.A.» y «Generado: dd/MM/yyyy HH:mm».</td></tr>
+      <tr><td>Encabezado de la tabla</td><td>Fondo vino con texto blanco; <strong>se repite en cada página</strong>.</td></tr>
+      <tr><td>Precio / Vence / Activo</td><td>Precio con 2 decimales (<code>N2</code>), fecha <code>dd/MM/yyyy</code>, Activo sale <strong>Sí</strong>/<strong>No</strong> (no 1/0).</td></tr>
+      <tr><td>Pie de página</td><td>«Página X de Y».</td></tr>
+    </tbody>
+  </table></div>
+  <div class="nota ok"><strong>Verificado</strong><p>Con estos archivos la solución compila con <strong>0 errores</strong> y el reporte se renderiza (y se exporta a PDF) a la primera. Si el <code>DataTable</code> trae columnas <strong>extra</strong> que el <code>.rdlc</code> no usa, no pasa nada: se ignoran.</p></div>
+<!--RDLC_PRODUCTOS-->
+
+  <h3>Reporte de empleados (tblempleado ya existe: sirve si no creaste tblproducto)</h3>
+  <p>Descarga directa: <a href="archivos/RpEmpleados.rdlc" download>RpEmpleados.rdlc</a>. Se agrega igual que el anterior (carpeta <code>Reportes</code> + las 2 propiedades de <kbd>F4</kbd>). Columnas: ID, Código, Nombres, Apellidos, Puesto, Correo.</p>
+<!--RDLC_EMPLEADOS-->
+  <div class="code"><div class="code-bar"><span>C# · PruebaExamen/Form1.cs (uso con empleados)</span><button class="copy" type="button">Copiar</button></div><pre><code>btnReporteador1.ReporteadorMetConfigurar("tblempleado", @"Reportes\RpEmpleados.rdlc");</code></pre></div>
+
+  <h3>Adaptarlo a OTRA tabla en 3 cambios</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>#</th><th>Dónde (en el XML)</th><th>Qué cambias</th></tr></thead>
+    <tbody>
+      <tr><td><strong>1</strong></td><td><code>&lt;Fields&gt;</code> (dentro de <code>&lt;DataSet Name="DsReporte"&gt;</code>)</td><td>Cada <code>&lt;Field Name="x"&gt;&lt;DataField&gt;x&lt;/DataField&gt;</code> por las columnas de <strong>tu</strong> tabla, con los nombres <strong>EXACTOS</strong> de MySQL.</td></tr>
+      <tr><td><strong>2</strong></td><td>La <code>&lt;Tablix&gt;</code></td><td>Los textos de encabezado (<code>&lt;Value&gt;Producto&lt;/Value&gt;</code>) y las expresiones <code>=Fields!x.Value</code> de la fila de detalle.</td></tr>
+      <tr><td><strong>3</strong></td><td>Solo si cambias el <strong>número</strong> de columnas</td><td>Agrega o quita la <strong>misma cantidad</strong> de: <code>&lt;TablixColumn&gt;</code>, celdas (<code>&lt;TablixCell&gt;</code>) en <strong>cada</strong> <code>&lt;TablixRow&gt;</code>, y <code>&lt;TablixMember&gt;</code> en <code>&lt;TablixColumnHierarchy&gt;</code>.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="nota warn"><strong>Reglas que no se rompen</strong><p>Deja <code>&lt;DataSet Name="DsReporte"&gt;</code> tal cual. El <code>.rdlc</code> puede tener <strong>menos</strong> campos que columnas del SELECT (las demás se ignoran), pero <strong>NO</strong> puede tener un campo que no venga en el SELECT. Y cada <code>Name</code> de un <code>Textbox</code> debe ser único dentro del archivo.</p></div>
+
+  <div class="nota info"><strong>¿Diseñador visual o XML?</strong><p>Si tienes instalada la extensión <strong>Microsoft RDLC Report Designer</strong>, doble clic en el <code>.rdlc</code> abre el diseñador visual y puedes mover columnas con el mouse. Si no (lo más probable en tu PC), clic derecho › <strong>Abrir con…</strong> › <strong>Editor XML</strong> y lo editas como texto.</p></div>
+</section>
+
+<section id="rep-form1" class="paso emerg">
+  <header class="paso-head"><span class="num">R6</span><div><h2>Ponerlo en Form1 y probar</h2><p class="meta">⏱ 8 min · 📍 PruebaExamen › Form1</p></div></header>
+
+  <ol class="steps">
+    <li>Menú <strong>Compilar</strong> › <strong>Compilar solución</strong> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd>). Sin errores.</li>
+    <li>Abre <code>Form1</code> en modo <strong>[Diseño]</strong> (doble clic en <code>Form1.cs</code>).</li>
+    <li><strong>Cuadro de herramientas</strong> › grupo <strong>Componentes de CapaVista_Reporteador</strong> › arrastra <code>BtnReporteador</code> al formulario, <strong>ARRIBA del Navegador</strong>.</li>
+    <li>¿Por qué arriba? El Navegador <strong>crece hacia abajo</strong> al ejecutarse y tapa lo que esté debajo. Si no hay espacio arriba, selecciona <code>navegador2</code> y en Propiedades pon <strong>Location</strong> = <code>0, 60</code>.</li>
+    <li>Con el botón seleccionado, <kbd>F4</kbd> › revisa que <strong>(Name)</strong> = <code>btnReporteador1</code>.</li>
+  </ol>
+
+  <div class="win"><div class="win-title">Form1 [Diseño]</div><div class="win-body">
+    <p><span class="btn-mock">Reporte</span> &nbsp;← <code>btnReporteador1</code> (arriba)</p>
+    <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+    <p>↑ <code>navegador2</code> (debajo; crece hacia abajo)</p>
+  </div></div>
+
+  <h3>Form1.cs completo</h3>
+  <p><kbd>F7</kbd> sobre Form1 › reemplaza todo por esto:</p>
+  <div class="code"><div class="code-bar"><span>C# · PruebaExamen/Form1.cs</span><button class="copy" type="button">Copiar</button></div><pre><code>using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace PruebaExamen
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+            navegador2.NavegadorMetConfigurar("tblproducto", 2, 16);
+
+            // Reporteador: tabla + ruta del .rdlc (relativa a bin\Debug)
+            btnReporteador1.ReporteadorMetConfigurar("tblproducto", @"Reportes\RpProductos.rdlc");
+        }
+    }
+}</code></pre></div>
+  <div class="nota info"><strong>Ajusta a tu caso</strong><p>Cambia <code>16</code> por <strong>tu</strong> número de aplicación. Si no hiciste <code>tblproducto</code>, usa <code>"tblempleado"</code> + <code>@"Reportes\RpEmpleados.rdlc"</code> (y en el Navegador tu tabla/módulo/aplicación de siempre).</p></div>
+
+  <h3>Probar</h3>
+  <ol class="steps">
+    <li><kbd>F5</kbd> › inicia sesión en el login.</li>
+    <li>Clic en <span class="btn-mock">Reporte</span> › se abre la ventana del reporte:</li>
+  </ol>
+
+  <div class="win"><div class="win-title">Reporte - tblproducto</div><div class="win-body">
+    <p><span class="btn-mock">|◀</span> <span class="btn-mock">◀</span> <span class="input">1</span> de 1 <span class="btn-mock">▶</span> <span class="btn-mock">▶|</span> &nbsp; <span class="btn-mock">⟳</span> <span class="btn-mock">🖨</span> <span class="btn-mock">💾 Exportar ▾</span> <span class="input combo">100% ▾</span> <span class="input">Buscar…</span></p>
+    <p><strong>Reporte de productos</strong><br>Embutidos de Calidad S.A.<br><small>Generado: 29/09/2026 10:15</small></p>
+    <p><small>El encabezado de la tabla sale con fondo vino y letra blanca (se repite en cada página); Precio con 2 decimales, Vence en dd/MM/yyyy y Activo como Sí/No.</small></p>
+    <div class="tabla-wrap"><table class="tabla">
+      <thead><tr><th>ID</th><th>Categoría</th><th>Producto</th><th>Precio (Q)</th><th>Vence</th><th>Activo</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>1</td><td>Chorizo parrillero</td><td>25.50</td><td>31/03/2027</td><td>Sí</td></tr>
+        <tr><td>2</td><td>2</td><td>Jamón de pavo</td><td>42.00</td><td>30/04/2027</td><td>Sí</td></tr>
+        <tr><td>3</td><td>3</td><td>Salchicha Viena</td><td>18.75</td><td>31/05/2027</td><td>Sí</td></tr>
+      </tbody>
+    </table></div>
+    <p style="text-align:right"><small>Página 1 de 1</small></p>
+  </div></div>
+
+  <h3>Qué demostrar (usa la barra del visor)</h3>
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Demostración</th><th>Cómo</th></tr></thead>
+    <tbody>
+      <tr><td>Exportar a PDF</td><td><span class="btn-mock">💾 Exportar ▾</span> › <strong>PDF</strong> › guárdalo en el Escritorio y ábrelo.</td></tr>
+      <tr><td>Imprimir</td><td><span class="btn-mock">🖨</span> (también sirve «Microsoft Print to PDF»).</td></tr>
+      <tr><td>Zoom</td><td><span class="input combo">100% ▾</span> › 150% o «Ancho de página».</td></tr>
+      <tr><td>Buscar</td><td>Escribe <code>Jamón</code> en el cuadro de búsqueda › <strong>Buscar</strong>.</td></tr>
+      <tr><td>Datos en vivo</td><td>Cierra el reporte, agrega un producto con el Navegador y vuelve a abrirlo: aparece la fila nueva.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Demostración «cargar cualquier reporte»</h3>
+  <p>Con la ruta vacía el botón abre un diálogo para elegir el <code>.rdlc</code>:</p>
+  <div class="code"><div class="code-bar"><span>C# · PruebaExamen/Form1.cs</span><button class="copy" type="button">Copiar</button></div><pre><code>btnReporteador1.ReporteadorMetConfigurar("tblproducto", "");</code></pre></div>
+  <div class="win"><div class="win-title">Seleccione un reporte</div><div class="win-body">
+    <div class="field"><label>Carpeta</label><span class="input">…\PruebaExamen\bin\Debug\Reportes</span></div>
+    <div class="field"><label>Nombre</label><span class="input">RpProductos.rdlc</span></div>
+    <div class="field"><label>Tipo</label><span class="input combo">Reportes RDLC (*.rdlc) ▾</span></div>
+    <p><span class="btn-mock">Abrir</span> <span class="btn-mock">Cancelar</span></p>
+  </div></div>
+
+  <div class="nota warn"><strong>«No se puede cargar el archivo o ensamblado 'Microsoft.ReportViewer.WinForms'…» (o 'Microsoft.SqlServer.Types')</strong><p>Pasa al ejecutar si las DLL del ReportViewer no llegaron a la carpeta del <code>.exe</code>. Abre <code>PruebaExamen\bin\Debug</code> y comprueba que estén <code>Microsoft.ReportViewer.*.dll</code> (Common, WinForms, ProcessingObjectModel, DataVisualization…) <strong>y</strong> <code>Microsoft.SqlServer.Types.dll</code>. Si falta alguna: instala el <strong>mismo NuGet</strong> (<code>Microsoft.ReportingServices.ReportViewerControl.Winforms</code>, versión 150.1652.0) también en <code>PruebaExamen</code> y recompila.</p></div>
+
+  <ul class="check">
+    <li><label><input type="checkbox" data-k="r2-form1-compila"> La solución compila sin errores.</label></li>
+    <li><label><input type="checkbox" data-k="r2-form1-boton"> <code>btnReporteador1</code> está arriba del Navegador y no queda tapado.</label></li>
+    <li><label><input type="checkbox" data-k="r2-form1-linea"> Form1 tiene la línea <code>ReporteadorMetConfigurar(…)</code>.</label></li>
+    <li><label><input type="checkbox" data-k="r2-form1-abre"> Al hacer clic se abre el reporte con los registros.</label></li>
+    <li><label><input type="checkbox" data-k="r2-form1-pdf"> Exporté a PDF y lo abrí.</label></li>
+    <li><label><input type="checkbox" data-k="r2-form1-dialogo"> Probé la versión con ruta vacía (elegir el .rdlc).</label></li>
+  </ul>
+</section>
+
+<section id="rep-extras" class="paso emerg">
+  <header class="paso-head"><span class="num">R7</span><div><h2>Extras (solo si te sobra tiempo o te lo piden)</h2><p class="meta">📍 opcionales</p></div></header>
+
+  <h3>a) Conectar con el botón IMPRIMIR del Navegador</h3>
+  <div class="navbar-mock"><span class="nb">Ingresar</span><span class="nb">Consultar</span><span class="nb">Modificar</span><span class="nb">Eliminar</span><span class="nb">Guardar</span><span class="nb">Cancelar</span><span class="nb">Refrescar</span><span class="nb hot">Imprimir</span><span class="nb">Ayuda</span><span class="nb">Inicio</span><span class="nb">Anterior</span><span class="nb">Siguiente</span><span class="nb">Fin</span><span class="nb">Salir</span></div>
+  <p>El Navegador avisa qué botón se pulsó con el evento <code>NavegadorAccionSolicitada</code>. Pega esto en el constructor de <code>Form1</code>, <strong>después</strong> de las dos líneas de configuración:</p>
+  <div class="code"><div class="code-bar"><span>C# · PruebaExamen/Form1.cs (dentro del constructor)</span><button class="copy" type="button">Copiar</button></div><pre><code>            navegador2.NavegadorAccionSolicitada += Accion =&gt;
+            {
+                if (Accion == "IMPRIMIR")
+                    btnReporteador1.ReporteadorMetMostrar();
+            };</code></pre></div>
+  <div class="nota warn"><strong>Dos cosas que vas a ver</strong><p>1) Al <strong>cerrar</strong> tu reporte sale el mensaje del Navegador <em>«La impresión de reportes está pendiente de integración con el componente Reporteador.»</em>: el evento se dispara <strong>antes</strong> de la acción propia del Navegador y esa DLL no es tuya, así que no se puede quitar. Explícalo así. 2) <strong>Imprimir</strong> solo se habilita si el rol tiene <code>derImprimir</code>: Supervisor/PerfilExamen no lo tienen; pruébalo con <code>imelendez</code>.</p></div>
+
+  <h3>b) Reporte con JOIN (la categoría por nombre) con el MISMO .rdlc</h3>
+  <p>Reemplaza la línea <code>ReporteadorMetConfigurar(…)</code> de Form1 por:</p>
+  <div class="code"><div class="code-bar"><span>C# · PruebaExamen/Form1.cs</span><button class="copy" type="button">Copiar</button></div><pre><code>            btnReporteador1.ReporteadorMetConfigurarConsulta(
+                "SELECT p.idProducto, c.nombreCategoria AS idCategoria, p.nombreProducto, " +
+                "p.precioProducto, p.fechaVencimiento, p.is_active " +
+                "FROM tblproducto p JOIN tblcategoriaproducto c ON c.idCategoria = p.idCategoria",
+                @"Reportes\RpProductos.rdlc");</code></pre></div>
+  <div class="nota ok"><strong>El truco es el alias</strong><p><code>c.nombreCategoria AS idCategoria</code> hace que la columna se llame igual que el campo <code>idCategoria</code> del <code>.rdlc</code>. El reporte no cambia, pero ahora la columna <strong>Categoría</strong> muestra <em>Chorizos / Jamones / Salchichas</em> en vez de 1 / 2 / 3.</p></div>
+
+  <h3>c) Registrar el reporte en tblreporte y cargarlo por número</h3>
+  <p><code>tblreporte</code> es el catálogo de reportes del componente Reporteador y <code>tblaplicacionreporte</code> dice qué reporte pertenece a qué aplicación. En MySQL Workbench:</p>
+  <div class="code"><div class="code-bar"><span>SQL · MySQL Workbench</span><button class="copy" type="button">Copiar</button></div><pre><code>USE dbsistemaembutidos;
+INSERT INTO tblreporte (numeroReporte, nombreReporte, rutaReporte, fechaReporte)
+VALUES (1, 'Reporte de productos', 'Reportes/RpProductos.rdlc', CURDATE());
+
+-- Opcional: ligarlo a la aplicación Productos (usa tu número de aplicación)
+INSERT INTO tblaplicacionreporte (idAplicacion, numeroReporte)
+VALUES (16, 1);</code></pre></div>
+  <p>Y en Form1, en lugar de la ruta fija:</p>
+  <div class="code"><div class="code-bar"><span>C# · PruebaExamen/Form1.cs</span><button class="copy" type="button">Copiar</button></div><pre><code>            btnReporteador1.ReporteadorMetConfigurarDesdeBD("tblproducto", 1);</code></pre></div>
+  <div class="nota info"><strong>Ojo con tblreporte</strong><p><code>numeroReporte</code> <strong>NO</strong> es autoincremental (el número lo pones tú) y <code>nombreReporte</code> es <strong>único</strong> (no repitas el nombre). En la ruta usa <code>/</code> en lugar de <code>\</code> para no pelear con el escape de <code>\</code> en MySQL.</p></div>
+
+  <h3>d) Si el catedrático exige Crystal Reports</h3>
+  <p>Crystal <strong>no está instalado</strong> en tu PC: necesita «SAP Crystal Reports for Visual Studio» + su runtime (descarga grande de SAP). El patrón equivalente sería este (<strong>no probado en tu máquina</strong>):</p>
+  <div class="code"><div class="code-bar"><span>C# · CapaVista_Reporteador (versión Crystal, no probada)</span><button class="copy" type="button">Copiar</button></div><pre><code>            // Referencias: CrystalDecisions.CrystalReports.Engine, CrystalDecisions.Shared, CrystalDecisions.Windows.Forms
+            ReportDocument Reporte = new ReportDocument();
+            Reporte.Load(RutaRpt);                  // archivo .rpt
+            Reporte.SetDataSource(Datos);           // el mismo DataTable del Controlador
+            crystalReportViewer1.ReportSource = Reporte;</code></pre></div>
+  <div class="nota ok"><strong>Esa es la ventaja de las 3 capas</strong><p>El <strong>Modelo</strong> y el <strong>Controlador</strong> no cambian ni una línea: siguen entregando el mismo <code>DataTable</code>. Solo cambia el <strong>visor</strong> en la Vista (<code>ReportViewer</code> + <code>.rdlc</code> ⇄ <code>CrystalReportViewer</code> + <code>.rpt</code>).</p></div>
+
+  <h3>e) Preguntas que te pueden hacer</h3>
+  <details class="qa"><summary>¿Por qué 3 capas?</summary><div>Para separar responsabilidades: si cambia la base de datos solo toco el Modelo; si cambia la pantalla o el visor (RDLC → Crystal) solo toco la Vista. Cada capa se puede reutilizar y probar por separado, y el botón se reutiliza en cualquier formulario con una línea.</div></details>
+  <details class="qa"><summary>¿Qué hace cada capa?</summary><div><strong>Modelo</strong> (<code>ClsConexion</code>, <code>ClsSentenciasReporte</code>): habla con MySQL por ODBC, ejecuta el SELECT y devuelve un <code>DataTable</code>; lee la ruta de <code>tblreporte</code>. <strong>Controlador</strong> (<code>ClsControladorReporte</code>): valida (nombre de tabla con Regex, solo SELECT, que la ruta exista y sea <code>.rdlc</code>) y pide los datos al Modelo. <strong>Vista</strong> (<code>BtnReporteador</code>, <code>FrmVisorReporte</code>): el botón y la ventana; solo habla con el Controlador.</div></details>
+  <details class="qa"><summary>¿Qué es un RDLC y qué es ReportViewer?</summary><div>El <code>.rdlc</code> (Report Definition Language Client-side) es un XML con el diseño del reporte: campos, tabla, encabezado y pie. <code>ReportViewer</code> es el control de Microsoft (NuGet <code>Microsoft.ReportingServices.ReportViewerControl.Winforms</code>) que toma ese diseño + los datos, lo dibuja y permite imprimir, exportar a PDF/Excel/Word, hacer zoom y buscar.</div></details>
+  <details class="qa"><summary>¿Procesamiento local o de servidor?</summary><div><strong>Local</strong> (<code>ProcessingMode.Local</code>): el reporte se procesa en la misma PC con los datos que le pasa el programa; no hace falta un servidor. <strong>Remoto</strong> sería con SQL Server Reporting Services (archivos <code>.rdl</code> publicados en un servidor), que no usamos.</div></details>
+  <details class="qa"><summary>¿Qué es el DataSet del .rdlc y por qué debe llamarse igual?</summary><div>Es la lista de campos que el reporte espera (<code>&lt;DataSet Name="DsReporte"&gt;</code> con sus <code>&lt;Fields&gt;</code>). En código se le entrega el <code>DataTable</code> con <code>new ReportDataSource("DsReporte", Datos)</code>: el ReportViewer une ambos <strong>por nombre</strong>. Si no coinciden: <em>A data source instance has not been supplied…</em></div></details>
+  <details class="qa"><summary>¿Cómo evitas la inyección SQL?</summary><div>El nombre de tabla se valida con una <strong>Regex</strong> (solo letras, números y <code>_</code>), las consultas propias solo se aceptan si son <strong>SELECT</strong>, y la búsqueda en <code>tblreporte</code> usa un <strong>parámetro <code>?</code></strong> (ODBC) en lugar de concatenar el número.</div></details>
+  <details class="qa"><summary>¿Para qué sirven tblreporte y tblaplicacionreporte?</summary><div><code>tblreporte</code> es el catálogo de reportes (número, nombre único, ruta del archivo, fecha): así la ruta no queda fija en el código y se puede cambiar desde la BD. <code>tblaplicacionreporte</code> liga cada reporte con la aplicación de Seguridad a la que pertenece (por ejemplo «Productos» → reporte 1).</div></details>
+  <details class="qa"><summary>¿Qué cambiarías para usar Crystal Reports?</summary><div>Instalar SAP Crystal Reports for Visual Studio + runtime, diseñar un <code>.rpt</code> y en la Vista cambiar <code>ReportViewer</code> por <code>CrystalReportViewer</code> (<code>ReportDocument.Load</code> + <code>SetDataSource</code>). Modelo y Controlador quedan igual.</div></details>
+</section>
+
+<section id="rep-errores" class="paso emerg">
+  <header class="paso-head"><span class="num">R8</span><div><h2>Errores del Reporteador (síntoma → causa → solución)</h2><p class="meta">⏱ consulta rápida · 📍 cuando algo falle</p></div></header>
+
+  <div class="tabla-wrap"><table class="tabla">
+    <thead><tr><th>Síntoma (lo que ves)</th><th>Causa</th><th>Solución</th></tr></thead>
+    <tbody>
+      <tr><td><em>A data source instance has not been supplied for the data source 'X'</em></td><td>El <code>&lt;DataSet Name="…"&gt;</code> del <code>.rdlc</code> no se llama <code>DsReporte</code>.</td><td>Cámbialo a <code>DsReporte</code> (idéntico, con mayúsculas) o pasa el nombre como 3.er parámetro de <code>ReporteadorMetConfigurar</code>.</td></tr>
+      <tr><td><em>The definition of the report '…' is invalid</em> / <em>An error occurred during local report processing</em></td><td>XML mal copiado (cortado, etiqueta sin cerrar) o un <code>Field</code> que no viene en el SELECT.</td><td>Vuelve a pegar el XML completo o usa el archivo descargado. Revisa que cada <code>&lt;DataField&gt;</code> exista como columna en MySQL.</td></tr>
+      <tr><td><em>No se encontró el reporte: …\bin\Debug\Reportes\…</em></td><td>El <code>.rdlc</code> no se copia a la salida.</td><td><kbd>F4</kbd> sobre el <code>.rdlc</code>: <strong>Contenido</strong> + <strong>Copiar si es posterior</strong>. Recompila. Revisa también el nombre de la carpeta (<code>Reportes</code>).</td></tr>
+      <tr><td><em>No se puede cargar el archivo o ensamblado 'Microsoft.ReportViewer.WinForms'…</em></td><td>Las DLL del ReportViewer no llegaron a <code>PruebaExamen\bin\Debug</code>.</td><td>Comprueba que en <code>PruebaExamen\bin\Debug</code> estén <code>Microsoft.ReportViewer.*.dll</code> y <code>Microsoft.SqlServer.Types.dll</code>. Si faltan, instala el mismo NuGet también en <code>PruebaExamen</code> y recompila.</td></tr>
+      <tr><td><em>No se puede cargar el archivo o ensamblado 'Microsoft.SqlServer.Types, Version=14.0.0.0…'</em></td><td>El ReportViewer necesita <code>Microsoft.SqlServer.Types</code> 14.0 <strong>siempre</strong>, aunque el reporte sea una tabla simple.</td><td>Con el NuGet llega sola. Si usaste DLL sueltas, copia también <code>Microsoft.SqlServer.Types.dll</code> de <code>…\packages\Microsoft.SqlServer.Types.14.0.314.76\lib\net40\</code> y asegúrate de que quede en <code>PruebaExamen\bin\Debug</code>.</td></tr>
+      <tr><td><em>CS0012 El tipo 'IXmlSerializable' está definido en un ensamblado al que no se hace referencia… 'System.Xml'</em></td><td>A <code>CapaVista_Reporteador</code> le falta la referencia <code>System.Xml</code> (la pide el ReportViewer).</td><td>Clic derecho en Referencias de <code>CapaVista_Reporteador</code> › Agregar referencia › Ensamblados › marca <code>System.Xml</code> › Aceptar. Recompila.</td></tr>
+      <tr><td><em>El tipo o el nombre del espacio de nombres 'Reporting' no existe…</em></td><td>Falta el NuGet en <code>CapaVista_Reporteador</code>.</td><td>Clic derecho en <code>CapaVista_Reporteador</code> › Administrar paquetes NuGet › instala <code>Microsoft.ReportingServices.ReportViewerControl.Winforms</code> (ver R1).</td></tr>
+      <tr><td><em>No se encontró el tipo o el nombre del espacio de nombres 'ClsControladorReporte'…</em></td><td>Falta una referencia entre capas.</td><td>Vista › Referencias › Agregar referencia › Proyectos › <code>CapaControlador_Reporteador</code>. Y Controlador → <code>CapaModelo_Reporteador</code>.</td></tr>
+      <tr><td>No puedo agregar la referencia / «el proyecto de destino .NET… no es compatible»</td><td>Creaste una «Biblioteca de clases» de .NET moderno (.NET 6/8) en vez de <strong>.NET Framework 4.8</strong>.</td><td>Borra ese proyecto y créalo con la plantilla <strong>Biblioteca de clases (.NET Framework)</strong> › Framework 4.8.</td></tr>
+      <tr><td><em>El nombre 'InitializeComponent' no existe en el contexto actual</em></td><td>Borraste <code>BtnReporteador.Designer.cs</code> o su namespace no es <code>CapaVista_Reporteador</code>.</td><td>Borra el control y créalo de nuevo con «Control de usuario (Windows Forms)» (paso R4), sin tocar el <code>.Designer.cs</code>.</td></tr>
+      <tr><td><code>BtnReporteador</code> no aparece en el Cuadro de herramientas</td><td>No has compilado la Vista.</td><td>Compila. Si sigue sin salir: Cuadro de herramientas › Elegir elementos… › Examinar › <code>CapaVista_Reporteador\bin\Debug\CapaVista_Reporteador.dll</code>.</td></tr>
+      <tr><td>El botón no se ve al ejecutar</td><td>El Navegador creció hacia abajo y lo tapó.</td><td>Pon el botón <strong>arriba</strong> del Navegador (o <code>navegador2</code> en Location <code>0, 60</code>).</td></tr>
+      <tr><td><em>Data source name not found and no default driver specified</em></td><td>El DSN ODBC <code>EmbutidosS.A</code> no existe o es de otra arquitectura.</td><td>Revisa el DSN en «Orígenes de datos ODBC (64 bits)», con el mismo nombre exacto.</td></tr>
+      <tr><td><em>Nombre de tabla inválido</em></td><td>El nombre de la tabla tiene espacios, guiones u otros caracteres (lo bloquea la Regex del Controlador).</td><td>Escribe el nombre exacto: <code>"tblproducto"</code>, sin espacios.</td></tr>
+      <tr><td><code>#Error</code> en una celda del reporte</td><td>El tipo o formato del campo no encaja con la expresión (p. ej. formato de fecha sobre un texto).</td><td>Revisa la expresión de esa celda y su <code>&lt;Format&gt;</code>; quita el formato o usa la columna correcta.</td></tr>
+      <tr><td>La ventana del reporte sale vacía (solo encabezados o en blanco)</td><td>La tabla no tiene filas, o faltó <code>RefreshReport()</code>.</td><td>Revisa en Workbench <code>SELECT * FROM tblproducto;</code>. El <code>FrmVisorReporte</code> de R4 ya llama a <code>RefreshReport()</code> en <code>Load</code>.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Antes de entregar</h3>
+  <ul class="check">
+    <li><label><input type="checkbox" data-k="r2-fin-capas"> Los 3 proyectos (Modelo, Controlador, Vista) son .NET Framework 4.8 y compilan.</label></li>
+    <li><label><input type="checkbox" data-k="r2-fin-refs"> Referencias: Vista → Controlador → Modelo, y PruebaExamen → Vista.</label></li>
+    <li><label><input type="checkbox" data-k="r2-fin-nuget"> NuGet del ReportViewer en la Vista (y en PruebaExamen si hizo falta).</label></li>
+    <li><label><input type="checkbox" data-k="r2-fin-rdlc"> <code>Reportes\RpProductos.rdlc</code> con Contenido + Copiar si es posterior.</label></li>
+    <li><label><input type="checkbox" data-k="r2-fin-dataset"> El DataSet del .rdlc se llama <code>DsReporte</code>.</label></li>
+    <li><label><input type="checkbox" data-k="r2-fin-boton"> <code>btnReporteador1</code> en Form1, arriba del Navegador, configurado en una línea.</label></li>
+    <li><label><input type="checkbox" data-k="r2-fin-demo"> Login → Reporte → se ven los registros → Exportar a PDF funciona.</label></li>
+    <li><label><input type="checkbox" data-k="r2-fin-explica"> Sé explicar qué hace cada capa y por qué «DsReporte» debe coincidir.</label></li>
+  </ul>
+</section>
